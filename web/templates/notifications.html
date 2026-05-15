@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>thoughts // notifiche</title></head>
+<body>
+{{template "nav" .}}
+<div class="container" style="padding-top:1rem">
+  <div class="panel">
+    <div class="panel-title">// notifiche</div>
+    {{if .Notifications}}
+      {{range .Notifications}}
+      <div class="notif-row {{if not .Read}}unread{{end}}">
+        <span class="notif-type">{{.Type}}</span>
+        <span>{{.Message}}</span>
+        {{if .Actions}}
+        <div style="margin-left:auto; display:flex; gap:0.5rem">
+          {{range .Actions}}
+          <button class="btn btn-sm {{.Class}}"
+            hx-post="{{.URL}}"
+            hx-target="closest .notif-row"
+            hx-swap="outerHTML">
+            {{.Label}}
+          </button>
+          {{end}}
+        </div>
+        {{end}}
+      </div>
+      {{end}}
+    {{else}}
+    <div style="color:var(--text-dim); font-size:0.85rem; padding:1rem 0">
+      nessuna notifica.
+    </div>
+    {{end}}
+  </div>
+</div>
+</body>
+</html>

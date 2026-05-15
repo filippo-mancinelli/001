@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>thoughts // feed</title></head>
+<body>
+{{template "nav" .}}
+<div class="container" style="padding-top:1rem">
+  <div class="panel">
+    <div class="panel-title">// flusso recente</div>
+    {{if .Thoughts}}
+      {{range .Thoughts}}
+        {{template "thought-card" .}}
+      {{end}}
+    {{else}}
+    <div style="color:var(--text-dim); font-size:0.85rem; padding:1rem 0">
+      nessun aggiornamento.<br>
+      <span style="font-size:0.75rem">inizia a seguire persone per vedere i loro pensieri.</span>
+    </div>
+    {{end}}
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">// trova utenti</div>
+    <form method="GET" action="/search" style="display:flex; gap:0.5rem">
+      <input type="text" name="q" placeholder="cerca per username...">
+      <button class="btn btn-cyan">cerca</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

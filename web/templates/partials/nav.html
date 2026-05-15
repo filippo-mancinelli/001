@@ -1,0 +1,19 @@
+{{define "nav"}}
+<header>
+  <div class="container nav-inner">
+    <span class="site-title">[ <span>thoughts</span> ]</span>
+    {{if .User}}
+    <nav>
+      <a href="/">feed</a>
+      <a href="/@{{.User.Username}}">@{{.User.Username}}</a>
+      <a href="/notifications">notifiche</a>
+    </nav>
+    <div class="nav-right">
+      <form method="POST" action="/logout" style="display:inline">
+        <button class="btn btn-sm btn-red">logout</button>
+      </form>
+    </div>
+    {{end}}
+  </div>
+</header>
+{{end}}

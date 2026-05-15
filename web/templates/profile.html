@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>thoughts // @{{.Profile.Username}}</title></head>
+<body>
+{{template "nav" .}}
+<div class="container" style="padding-top:1rem">
+
+  <!-- profilo header -->
+  <div class="panel">
+    <div class="panel-title">// profilo</div>
+    <div style="display:flex; align-items:flex-start; gap:2rem">
+      <div>
+        <div style="font-size:1.4rem; color:var(--cyan)">@{{.Profile.Username}}</div>
+        {{if .Profile.Bio}}
+        <div style="color:var(--text-dim); margin-top:0.5rem; font-size:0.85rem">{{.Profile.Bio}}</div>
+        {{end}}
+        <div style="font-size:0.7rem; color:var(--text-dim); margin-top:0.75rem">
+          membro dal {{.Profile.CreatedAt.Format "2006-01-02"}}
+        </div>
+      </div>
+      <div style="margin-left:auto; display:flex; flex-direction:column; gap:0.5rem; align-items:flex-end">
+        {{if not .IsSelf}}
+          {{if .IsFollowing}}
+          <form method="POST" action="/follow/{{.Profile.Username}}">
+            <input type="hidden" name="_method" value="DELETE">
+            <button class="btn btn-red btn-sm"
+              hx-delete="/follow/{{.Profile.Username}}"
+              hx-target="#follow-btn"
+              hx-swap="outerHTML">
+              [ smetti di seguire ]
+            </button>
+          </form>
+          {{else}}
+          <button id="follow-btn" class="btn btn-cyan btn-sm"
+            hx-post="/follow/{{.Profile.Username}}"
+            hx-target="#follow-btn"
+            hx-swap="outerHTML">
+            [ + segui ]
+          </button>
+          {{end}}
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem">
+
+    <!-- connessioni (following) -->
+    <div class="panel">
+      <div class="panel-title">// connessioni</div>
+      {{if .Following}}
+        {{range .Following}}
+        <div class="user-row">
+          <a href="/@{{.Username}}" class="username">{{.Username}}</a>
+        </div>
+        {{end}}
+      {{else}}
+      <span style="color:var(--text-dim); font-size:0.8rem">nessuna connessione</span>
+      {{end}}
+    </div>
+
+    <!-- pensieri scritti da questo profilo -->
+    <div class="panel">
+      <div class="panel-title">// pensieri</div>
+      {{if .IsSelf}}
+      <div style="margin-bottom:0.75rem">
+        <button class="btn btn-sm"
+          hx-get="/thoughts/new"
+          hx-target="#thought-editor-area"
+          hx-swap="innerHTML">
+          [ + nuovo pensiero ]
+        </button>
+      </div>
+      <div id="thought-editor-area"></div>
+      {{end}}
+
+      {{if .Thoughts}}
+        {{range .Thoughts}}
+          {{template "thought-card" .}}
+        {{end}}
+      {{else}}
+      <span style="color:var(--text-dim); font-size:0.8rem">nessun pensiero ancora</span>
+      {{end}}
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

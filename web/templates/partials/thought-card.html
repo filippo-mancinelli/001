@@ -1,0 +1,26 @@
+{{define "thought-card"}}
+<div class="thought-card">
+  <div class="thought-meta">
+    <span class="author">@{{.AuthorName}}</span>
+    <span style="color:var(--text-dim)">su</span>
+    <span class="subject">@{{.SubjectName}}</span>
+    {{if .IsDirect}}<span class="badge-direct">versione diretta</span>{{end}}
+  </div>
+  <div class="thought-content">{{.Content}}</div>
+  {{if .CanSendCurious}}
+  <div class="thought-actions">
+    <button class="btn btn-amber btn-sm"
+      hx-post="/curious/{{.ThoughtID}}"
+      hx-target="closest .thought-card"
+      hx-swap="outerHTML">
+      [ sono curioso ]
+    </button>
+  </div>
+  {{end}}
+  {{if .CuriousPending}}
+  <div class="thought-actions">
+    <span style="color:var(--amber); font-size:0.75rem">richiesta inviata — in attesa...</span>
+  </div>
+  {{end}}
+</div>
+{{end}}
