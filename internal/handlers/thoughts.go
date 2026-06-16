@@ -28,6 +28,11 @@ func GetThoughtEditor(c *gin.Context) {
 	c.HTML(http.StatusOK, "thought-editor", gin.H{"Following": following})
 }
 
+// CancelThoughtEditor svuota l'area dell'editor (risposta HTMX).
+func CancelThoughtEditor(c *gin.Context) {
+	c.Data(http.StatusOK, "text/html", []byte(""))
+}
+
 func PostThought(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 	subjectID := c.PostForm("subject_id")

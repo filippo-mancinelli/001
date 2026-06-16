@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"thoughts/internal/db"
 	"thoughts/internal/models"
@@ -22,14 +23,25 @@ func PostFollow(c *gin.Context) {
 		return
 	}
 
-	db.Pool.Exec(context.Background(),
+	tag, _ := db.Pool.Exec(context.Background(),
 		`INSERT INTO follows (follower_id, following_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
 		user.ID, targetID,
 	)
 
+	// notifica al seguito solo se è un follow nuovo (e non sé stesso)
+	if tag.RowsAffected() > 0 && targetID != user.ID {
+		payload, _ := json.Marshal(map[string]string{
+			"follower_id":   user.ID,
+			"follower_name": user.Username,
+		})
+		db.Pool.Exec(context.Background(), `
+			INSERT INTO notifications (user_id, type, payload) VALUES ($1, 'new_follower', $2)
+		`, targetID, string(payload))
+	}
+
 	// risposta HTMX: bottone aggiornato
 	c.Data(http.StatusOK, "text/html", []byte(`
-		<button class="btn btn-red btn-sm"
+		<button id="follow-btn" class="btn btn-red btn-sm"
 			hx-delete="/follow/`+username+`"
 			hx-target="#follow-btn"
 			hx-swap="outerHTML">

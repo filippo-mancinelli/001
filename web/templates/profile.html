@@ -21,15 +21,12 @@
       <div style="margin-left:auto; display:flex; flex-direction:column; gap:0.5rem; align-items:flex-end">
         {{if not .IsSelf}}
           {{if .IsFollowing}}
-          <form method="POST" action="/follow/{{.Profile.Username}}">
-            <input type="hidden" name="_method" value="DELETE">
-            <button class="btn btn-red btn-sm"
-              hx-delete="/follow/{{.Profile.Username}}"
-              hx-target="#follow-btn"
-              hx-swap="outerHTML">
-              [ smetti di seguire ]
-            </button>
-          </form>
+          <button id="follow-btn" class="btn btn-red btn-sm"
+            hx-delete="/follow/{{.Profile.Username}}"
+            hx-target="#follow-btn"
+            hx-swap="outerHTML">
+            [ smetti di seguire ]
+          </button>
           {{else}}
           <button id="follow-btn" class="btn btn-cyan btn-sm"
             hx-post="/follow/{{.Profile.Username}}"
