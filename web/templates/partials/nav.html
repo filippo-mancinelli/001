@@ -1,10 +1,12 @@
 {{define "nav"}}
+<div id="loadbar"><div class="loadbar-fill"></div></div>
 <header>
   <div class="container nav-inner">
-    <span class="site-title">[ <span>thoughts</span> ]</span>
+    <a href="/" class="site-title">[ <span>thoughts</span> ]</a>
     {{if .User}}
     <nav>
       <a href="/">feed</a>
+      <a href="/search">cerca</a>
       <a href="/@{{.User.Username}}">@{{.User.Username}}</a>
       <a href="/notifications">notifiche</a>
     </nav>
@@ -16,4 +18,18 @@
     {{end}}
   </div>
 </header>
+{{end}}
+
+{{define "statusbar"}}
+<footer class="statusbar">
+  <div class="container">
+    <span><span class="ok">●</span> online</span>
+    <span class="sep">//</span>
+    <span>thoughts v0.1</span>
+    <span class="sep">//</span>
+    {{if .User}}<span>sessione: @{{.User.Username}}</span>{{else}}<span>ospite</span>{{end}}
+    <span class="sep">//</span>
+    <span>personal knowledge network</span>
+  </div>
+</footer>
 {{end}}

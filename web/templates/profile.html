@@ -40,7 +40,7 @@
     </div>
   </div>
 
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem">
+  <div class="grid-2">
 
     <!-- connessioni (following) -->
     <div class="panel">
@@ -52,7 +52,7 @@
         </div>
         {{end}}
       {{else}}
-      <span style="color:var(--text-dim); font-size:0.8rem">nessuna connessione</span>
+      <div class="empty">nessuna connessione</div>
       {{end}}
     </div>
 
@@ -76,11 +76,12 @@
           {{template "thought-card" .}}
         {{end}}
       {{else}}
-      <span style="color:var(--text-dim); font-size:0.8rem">nessun pensiero ancora</span>
+      <div class="empty">nessun pensiero ancora</div>
       {{end}}
     </div>
 
   </div>
 </div>
+{{template "statusbar" .}}
 </body>
 </html>

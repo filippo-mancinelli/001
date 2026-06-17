@@ -1,6 +1,23 @@
 {{define "head"}}
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#060806">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14' fill='%2300ff41'>%5B%5D</text></svg>">
 <link rel="stylesheet" href="/static/css/retro.css">
 <script src="/static/js/htmx.min.js"></script>
+<script>
+  // pilota la barra di caricamento globale durante le richieste htmx
+  document.addEventListener('htmx:beforeRequest', function () {
+    document.body.classList.add('htmx-busy');
+  });
+  function clearBusy() {
+    if (!document.querySelector('.htmx-request')) {
+      document.body.classList.remove('htmx-busy');
+    }
+  }
+  document.addEventListener('htmx:afterRequest', clearBusy);
+  document.addEventListener('htmx:responseError', clearBusy);
+  document.addEventListener('htmx:sendError', clearBusy);
+</script>
 {{end}}

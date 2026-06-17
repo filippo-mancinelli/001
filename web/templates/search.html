@@ -17,16 +17,17 @@
     {{if .Results}}
       {{range .Results}}
       <div class="user-row">
-        <a href="/@{{.Username}}" class="username">@{{.Username}}</a>
-        {{if .Bio}}<span style="color:var(--text-dim); font-size:0.8rem; margin-left:0.75rem">{{.Bio}}</span>{{end}}
+        <a href="/@{{.Username}}" class="username">{{.Username}}</a>
+        {{if .Bio}}<span style="color:var(--text-dim); font-size:0.8rem">{{.Bio}}</span>{{end}}
       </div>
       {{end}}
     {{else}}
-    <div style="color:var(--text-dim); font-size:0.85rem; padding:1rem 0">
+    <div class="empty">
       {{if .Query}}nessun utente trovato.{{else}}inserisci un username per cercare.{{end}}
     </div>
     {{end}}
   </div>
 </div>
+{{template "statusbar" .}}
 </body>
 </html>
