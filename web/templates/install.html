@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>thoughts // installa</title></head>
+<body>
+<div class="container" style="max-width:480px; padding-top:4rem">
+  <div style="text-align:center; margin-bottom:2rem">
+    <img src="/static/icons/icon-192.png" alt="thoughts" width="84" height="84"
+         style="border-radius:20px; box-shadow:var(--shadow); margin-bottom:0.75rem">
+    <div class="site-title" style="font-size:2.2rem">[ <span>thoughts</span> ]</div>
+    <div class="auth-tagline">INSTALLA L'APP SUL TUO DISPOSITIVO</div>
+  </div>
+
+  <!-- stato: già installata -->
+  <div class="panel" id="panel-installed" style="display:none">
+    <div class="panel-title">// già installata</div>
+    <div class="alert alert-ok">stai già usando thoughts come app installata. nulla da fare!</div>
+    <a href="/" class="btn btn-cyan" style="width:100%; margin-top:0.5rem">[ vai al feed ]</a>
+  </div>
+
+  <!-- stato: Android / browser che supporta l'install prompt -->
+  <div class="panel" id="panel-android" style="display:none">
+    <div class="panel-title">// installazione rapida</div>
+    <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:1rem">
+      il tuo dispositivo supporta l'installazione diretta. tocca il pulsante qui sotto
+      e conferma per aggiungere thoughts alla schermata home.
+    </p>
+    <button id="btn-install" class="btn" style="width:100%">[ installa thoughts ]</button>
+    <div id="android-hint" style="display:none; margin-top:1rem">
+      <hr class="divider">
+      <p style="font-size:0.8rem; color:var(--text-dim)">
+        non è apparso il prompt? apri il menu del browser
+        (<strong>⋮</strong>) e scegli <strong>"Installa app"</strong> o
+        <strong>"Aggiungi a schermata Home"</strong>.
+      </p>
+    </div>
+  </div>
+
+  <!-- stato: iOS / iPadOS -->
+  <div class="panel" id="panel-ios" style="display:none">
+    <div class="panel-title">// installa su iPhone / iPad</div>
+    <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:1rem">
+      su iOS l'installazione si fa da <strong>Safari</strong> in pochi passaggi:
+    </p>
+    <ol class="install-steps">
+      <li>
+        tocca il pulsante <strong>Condividi</strong>
+        <svg class="ios-glyph" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                d="M12 3v12M8 7l4-4 4 4M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/>
+        </svg>
+        nella barra di Safari (in basso).
+      </li>
+      <li>
+        scorri e scegli <strong>"Aggiungi a Home"</strong>
+        <svg class="ios-glyph" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect x="4" y="4" width="16" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>.
+      </li>
+      <li>
+        conferma toccando <strong>"Aggiungi"</strong> in alto a destra.
+      </li>
+    </ol>
+    <div id="ios-not-safari" class="alert alert-error" style="display:none; margin-top:1rem; font-size:0.8rem">
+      sembra che tu non stia usando Safari. su iPhone/iPad l'installazione come app
+      funziona solo da <strong>Safari</strong>: apri questa pagina lì
+      (<span style="white-space:nowrap">{{.Host}}/install</span>) e ripeti i passaggi.
+    </div>
+  </div>
+
+  <!-- stato: desktop / altro -->
+  <div class="panel" id="panel-desktop" style="display:none">
+    <div class="panel-title">// installa su desktop</div>
+    <p style="font-size:0.85rem; color:var(--text-dim)">
+      apri questa pagina con <strong>Chrome</strong>, <strong>Edge</strong> o un browser
+      compatibile: troverai l'icona di installazione
+      (<strong>⊕</strong>) nella barra degli indirizzi, oppure la voce
+      <strong>"Installa thoughts"</strong> nel menu del browser.
+    </p>
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-top:0.75rem">
+      per la migliore esperienza, installala sul tuo telefono:
+      apri <span style="white-space:nowrap">{{.Host}}/install</span> da mobile.
+    </p>
+  </div>
+
+  <div style="text-align:center; font-size:0.78rem; margin-top:1.25rem">
+    <a href="/">torna a thoughts</a>
+  </div>
+</div>
+
+<style>
+  .install-steps { list-style:none; counter-reset:step; }
+  .install-steps li {
+    counter-increment:step;
+    position:relative;
+    padding:0.6rem 0 0.6rem 2.4rem;
+    font-size:0.85rem;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .install-steps li:last-child { border-bottom:none; }
+  .install-steps li::before {
+    content:counter(step);
+    position:absolute; left:0; top:0.55rem;
+    width:1.6rem; height:1.6rem;
+    background:var(--blue); color:#fff;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.8rem; font-weight:700;
+  }
+  .ios-glyph {
+    display:inline-block;
+    vertical-align:-0.2em;
+    color:var(--blue);
+  }
+</style>
+
+<script>
+  (function () {
+    var ua = navigator.userAgent || '';
+    var nav = navigator;
+
+    // già in modalità app installata?
+    var isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                       nav.standalone === true;
+
+    var isIOS = /iphone|ipad|ipod/i.test(ua) ||
+                // iPadOS 13+ si presenta come Mac ma è touch
+                (/macintosh/i.test(ua) && 'ontouchend' in document);
+    var isAndroid = /android/i.test(ua);
+    // Safari "vero" (escludendo Chrome/Firefox/Edge su iOS)
+    var isSafari = /safari/i.test(ua) && !/crios|fxios|edgios|chrome|android/i.test(ua);
+
+    function show(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.display = '';
+    }
+
+    if (isStandalone) {
+      show('panel-installed');
+      return;
+    }
+
+    if (isIOS) {
+      show('panel-ios');
+      if (!isSafari) show('ios-not-safari');
+      return;
+    }
+
+    var deferredPrompt = null;
+    var promptHooked = false;
+
+    // l'evento può arrivare prima o dopo questo script: gestiamo entrambi i casi
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      show('panel-android');
+      promptHooked = true;
+    });
+
+    var btn = document.getElementById('btn-install');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        if (!deferredPrompt) {
+          document.getElementById('android-hint').style.display = '';
+          return;
+        }
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function (choice) {
+          deferredPrompt = null;
+          if (choice && choice.outcome === 'accepted') {
+            document.getElementById('panel-android').innerHTML =
+              '<div class="panel-title">// fatto</div>' +
+              '<div class="alert alert-ok">installazione avviata. trovi thoughts nella schermata home.</div>';
+          } else {
+            document.getElementById('android-hint').style.display = '';
+          }
+        });
+      });
+    }
+
+    window.addEventListener('appinstalled', function () {
+      var p = document.getElementById('panel-android');
+      if (p) p.innerHTML =
+        '<div class="panel-title">// fatto</div>' +
+        '<div class="alert alert-ok">thoughts è stata installata. trovala nella schermata home.</div>';
+    });
+
+    // decidiamo il pannello iniziale dopo un attimo, dando tempo al
+    // beforeinstallprompt di arrivare (Android/Chrome lo emette quasi subito).
+    setTimeout(function () {
+      if (promptHooked) return;
+      if (isAndroid) {
+        // Android ma niente prompt: mostriamo comunque il pannello con l'hint manuale
+        show('panel-android');
+        document.getElementById('android-hint').style.display = '';
+      } else {
+        show('panel-desktop');
+      }
+    }, 1200);
+  })();
+</script>
+</body>
+</html>

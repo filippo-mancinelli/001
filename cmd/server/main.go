@@ -55,6 +55,12 @@ func main() {
 	r := gin.Default()
 	r.Static("/static", "web/static")
 
+	// PWA: manifest e service worker serviti dalla radice (scope "/"),
+	// pagina di installazione pubblica.
+	r.GET("/manifest.webmanifest", handlers.GetManifest)
+	r.GET("/sw.js", handlers.GetServiceWorker)
+	r.GET("/install", handlers.GetInstall)
+
 	tmpl := template.Must(template.New("").Funcs(templateFuncs).ParseGlob("web/templates/*.html"))
 	tmpl = template.Must(tmpl.ParseGlob("web/templates/partials/*.html"))
 	r.SetHTMLTemplate(tmpl)
