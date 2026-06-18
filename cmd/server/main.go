@@ -81,6 +81,7 @@ func main() {
 		auth.POST("/follow/:username", handlers.PostFollow)
 		auth.DELETE("/follow/:username", handlers.DeleteFollow)
 		auth.GET("/notifications", handlers.GetNotifications)
+		auth.GET("/network", handlers.GetNetwork)
 
 		auth.POST("/thoughts", handlers.PostThought)
 		auth.GET("/thoughts/new", handlers.GetThoughtEditor)

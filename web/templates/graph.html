@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>thoughts // rete</title>
+<style>
+#netCanvas { display:block; width:100%; cursor:grab; }
+#netCanvas:active { cursor:grabbing; }
+.graph-wrap { position:relative; background:#06101e; }
+.scanlines {
+  position:absolute; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px,
+    transparent 1px, transparent 3px
+  );
+}
+.graph-footer {
+  display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
+  padding:0.55rem 1.2rem;
+  background:#07121f;
+  border-top:1px solid #132a4a;
+  font-size:0.72rem; color:#3a5a7a;
+  font-family:monospace;
+}
+.leg { display:flex; align-items:center; gap:0.4rem; }
+.leg-sq { width:11px; height:11px; border:1px solid; flex:none; }
+.graph-footer .sep { color:#132a4a; }
+</style>
+</head>
+<body>
+{{template "nav" .}}
+<div class="container" style="padding-top:1rem">
+  <div class="panel" style="padding:0; overflow:hidden">
+    <div class="panel-title">// mappa della rete — grafo connessioni</div>
+    <div class="graph-wrap">
+      <canvas id="netCanvas"></canvas>
+      <div class="scanlines"></div>
+    </div>
+    <div class="graph-footer">
+      <span class="leg"><span class="leg-sq" style="background:#0c1830;border-color:#2a5f9e"></span> utente</span>
+      <span class="leg"><span class="leg-sq" style="background:#2a1800;border-color:#f0c040"></span> tu</span>
+      <span class="sep">//</span>
+      <span>trascina nodo · hover per connessioni · click → profilo</span>
+      <span class="sep">//</span>
+      <span id="netInfo">—</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const DATA = {{.GraphJSON}};
+  if (!DATA || !DATA.nodes) return;
+
+  const canvas = document.getElementById('netCanvas');
+  const ctx    = canvas.getContext('2d');
+  let W = 0, H = 0;
+
+  function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const cw  = canvas.parentElement.clientWidth;
+    const ch  = Math.max(460, Math.min(620, window.innerHeight - 220));
+    canvas.width  = cw * dpr;
+    canvas.height = ch * dpr;
+    canvas.style.height = ch + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    W = cw; H = ch;
+  }
+  resize();
+  window.addEventListener('resize', () => { resize(); scatter(); });
+
+  /* ── avatar colour (mirrors Go avatarColor) ── */
+  function avatarColor(u) {
+    let h = 0;
+    for (let i = 0; i < u.length; i++) h = (Math.imul(h, 31) + u.charCodeAt(i)) | 0;
+    return `hsl(${(((h % 360) + 360) % 360)}, 50%, 35%)`;
+  }
+
+  /* ── node width based on label length ── */
+  function nw(n) { return Math.max(92, n.username.length * 7 + 46); }
+  const NH = 36;
+
+  /* ── build graph ── */
+  const nodeMap = {};
+  const nodes = DATA.nodes.map(d => {
+    const n = { ...d, x:0, y:0, vx:0, vy:0, color: avatarColor(d.username) };
+    nodeMap[d.id] = n;
+    return n;
+  });
+  const edges = DATA.edges || [];
+
+  /* degree for future use */
+  const deg = {};
+  nodes.forEach(n => deg[n.id] = 0);
+  edges.forEach(e => { deg[e.from] = (deg[e.from]||0)+1; deg[e.to] = (deg[e.to]||0)+1; });
+
+  document.getElementById('netInfo').textContent =
+    nodes.length + ' nodi · ' + edges.length + ' archi';
+
+  function scatter() {
+    nodes.forEach((n, i) => {
+      const a = (2 * Math.PI * i) / nodes.length;
+      const r = Math.min(W, H) * 0.28;
+      n.x = W/2 + r * Math.cos(a) + (Math.random()-0.5)*20;
+      n.y = H/2 + r * Math.sin(a) + (Math.random()-0.5)*20;
+      n.vx = 0; n.vy = 0;
+    });
+  }
+  scatter();
+
+  /* ── force simulation ── */
+  let ticks = 0, simOn = true;
+
+  function tick() {
+    const REP = 7000, SPR_LEN = 140, SPR_K = 0.045, DAMP = 0.80, GRAV = 0.003;
+
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i+1; j < nodes.length; j++) {
+        const a = nodes[i], b = nodes[j];
+        let dx = b.x-a.x, dy = b.y-a.y;
+        const d2 = dx*dx + dy*dy || 1, d = Math.sqrt(d2);
+        const f  = REP / d2;
+        a.vx -= f*dx/d; a.vy -= f*dy/d;
+        b.vx += f*dx/d; b.vy += f*dy/d;
+      }
+    }
+    edges.forEach(e => {
+      const a = nodeMap[e.from], b = nodeMap[e.to];
+      if (!a || !b) return;
+      const dx = b.x-a.x, dy = b.y-a.y;
+      const d = Math.sqrt(dx*dx+dy*dy) || 1;
+      const f = (d - SPR_LEN) * SPR_K;
+      a.vx += f*dx/d; a.vy += f*dy/d;
+      b.vx -= f*dx/d; b.vy -= f*dy/d;
+    });
+    nodes.forEach(n => {
+      n.vx += (W/2 - n.x) * GRAV;
+      n.vy += (H/2 - n.y) * GRAV;
+      n.vx *= DAMP; n.vy *= DAMP;
+      n.x  += n.vx;  n.y  += n.vy;
+      n.x = Math.max(55, Math.min(W-55, n.x));
+      n.y = Math.max(25, Math.min(H-25, n.y));
+    });
+    if (++ticks > 320) simOn = false;
+  }
+
+  /* ── pan / drag ── */
+  let pan = {x:0, y:0}, dragged = null, panning = false, lastM = null, hovN = null;
+
+  function toWorld(cx, cy) { return {x: cx-pan.x, y: cy-pan.y}; }
+
+  function hitNode(wx, wy) {
+    for (let i = nodes.length-1; i >= 0; i--) {
+      const n = nodes[i], hw = nw(n)/2;
+      if (wx >= n.x-hw && wx <= n.x+hw && wy >= n.y-NH/2 && wy <= n.y+NH/2) return n;
+    }
+    return null;
+  }
+
+  function onDown(mx, my) {
+    const w = toWorld(mx, my);
+    const hit = hitNode(w.x, w.y);
+    if (hit) { dragged = hit; simOn = true; ticks = 0; }
+    else panning = true;
+    lastM = {x:mx, y:my};
+  }
+  function onMove(mx, my) {
+    if (dragged) {
+      const w = toWorld(mx, my);
+      dragged.x = w.x; dragged.y = w.y; dragged.vx = 0; dragged.vy = 0;
+      simOn = true; ticks = 0;
+    } else if (panning) {
+      pan.x += mx - lastM.x; pan.y += my - lastM.y;
+    } else {
+      hovN = hitNode(toWorld(mx, my).x, toWorld(mx, my).y);
+    }
+    lastM = {x:mx, y:my};
+  }
+  function onUp(mx, my) {
+    if (dragged && lastM && Math.abs(mx-lastM.x)<5 && Math.abs(my-lastM.y)<5)
+      window.location.href = '/@' + dragged.username;
+    dragged = null; panning = false;
+  }
+
+  /* mouse */
+  canvas.addEventListener('mousedown', e => {
+    const r = canvas.getBoundingClientRect();
+    onDown(e.clientX-r.left, e.clientY-r.top);
+  });
+  canvas.addEventListener('mousemove', e => {
+    const r = canvas.getBoundingClientRect();
+    onMove(e.clientX-r.left, e.clientY-r.top);
+  });
+  canvas.addEventListener('mouseup', e => {
+    const r = canvas.getBoundingClientRect();
+    onUp(e.clientX-r.left, e.clientY-r.top);
+  });
+  canvas.addEventListener('mouseleave', () => { dragged = null; panning = false; hovN = null; });
+
+  /* touch */
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const r = canvas.getBoundingClientRect(), t = e.touches[0];
+    onDown(t.clientX-r.left, t.clientY-r.top);
+  }, {passive:false});
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const r = canvas.getBoundingClientRect(), t = e.touches[0];
+    onMove(t.clientX-r.left, t.clientY-r.top);
+  }, {passive:false});
+  canvas.addEventListener('touchend', e => {
+    const r = canvas.getBoundingClientRect();
+    const t = e.changedTouches[0];
+    onUp(t.clientX-r.left, t.clientY-r.top);
+  });
+
+  /* ── rendering ── */
+  const PCOL = { online:'#2e8b3d', away:'#e0a93a', busy:'#cc3333', offline:'#5a6a7a' };
+
+  function drawEdge(a, b, hi) {
+    const hw_a = nw(a)/2, hw_b = nw(b)/2, hh = NH/2;
+    const dx = b.x-a.x, dy = b.y-a.y;
+    const d  = Math.sqrt(dx*dx+dy*dy) || 1;
+    const nx = dx/d, ny = dy/d;
+    const sx = a.x + nx*hw_a, sy = a.y + ny*hh;
+    const ex = b.x - nx*(hw_b+1), ey = b.y - ny*(hh+1);
+
+    ctx.beginPath();
+    ctx.moveTo(sx, sy); ctx.lineTo(ex, ey);
+    ctx.strokeStyle = hi ? 'rgba(240,192,64,0.80)' : 'rgba(42,95,158,0.38)';
+    ctx.lineWidth   = hi ? 2 : 1;
+    ctx.stroke();
+
+    /* arrowhead */
+    const AL = 9, AW = 4;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - nx*AL + ny*AW, ey - ny*AL - nx*AW);
+    ctx.lineTo(ex - nx*AL - ny*AW, ey - ny*AL + nx*AW);
+    ctx.closePath();
+    ctx.fillStyle = hi ? 'rgba(240,192,64,0.80)' : 'rgba(42,95,158,0.50)';
+    ctx.fill();
+  }
+
+  function drawNode(n, hi) {
+    const w = nw(n), h = NH;
+    const x = Math.floor(n.x - w/2), y = Math.floor(n.y - h/2);
+    const D = 5; /* 2.5D extrusion depth */
+    const self = n.is_self;
+
+    /* glow */
+    if (hi || self) {
+      ctx.shadowColor = self ? 'rgba(240,192,64,0.55)' : 'rgba(59,127,196,0.55)';
+      ctx.shadowBlur  = 16;
+    }
+
+    /* extrusion (2.5D depth shadow) */
+    ctx.fillStyle = self ? '#1e0d00' : '#010810';
+    ctx.fillRect(x+D, y+D, w, h);
+
+    /* main face */
+    const g = ctx.createLinearGradient(x, y, x, y+h);
+    if (self) {
+      g.addColorStop(0, '#3a2200'); g.addColorStop(0.5, '#2c1900'); g.addColorStop(1, '#200f00');
+    } else {
+      g.addColorStop(0, '#122244'); g.addColorStop(0.5, '#0c1830'); g.addColorStop(1, '#080f20');
+    }
+    ctx.fillStyle = g;
+    ctx.fillRect(x, y, w, h);
+
+    ctx.shadowBlur = 0;
+
+    /* border */
+    ctx.strokeStyle = self ? '#f0c040' : (hi ? '#6aabf0' : '#1e4a80');
+    ctx.lineWidth   = (self || hi) ? 2 : 1;
+    ctx.strokeRect(x+0.5, y+0.5, w-1, h-1);
+
+    /* top-edge highlight */
+    ctx.fillStyle = 'rgba(255,255,255,0.09)';
+    ctx.fillRect(x+1, y+1, w-2, 1);
+
+    /* avatar square */
+    const AV = 22, avX = x+5, avY = y+(h-AV)/2;
+    ctx.fillStyle = n.color;
+    ctx.fillRect(avX, avY, AV, AV);
+    ctx.strokeStyle = self ? '#c09030' : '#1a3060';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(avX+0.5, avY+0.5, AV-1, AV-1);
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(n.username[0].toUpperCase(), avX+AV/2, avY+AV/2+0.5);
+
+    /* username */
+    ctx.fillStyle = self ? '#f0c040' : (hi ? '#c0d8f4' : '#4a7aaa');
+    ctx.font = 'bold 10px monospace';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText('@' + n.username, x+32, y+6);
+
+    /* presence square + label */
+    ctx.fillStyle = PCOL[n.presence] || PCOL.online;
+    ctx.fillRect(x+32, y+21, 6, 6);
+    ctx.fillStyle = '#3a5a7a';
+    ctx.font = '8px monospace';
+    ctx.fillText(n.presence || 'online', x+41, y+21);
+  }
+
+  function render() {
+    ctx.clearRect(0, 0, W, H);
+
+    /* bg */
+    ctx.fillStyle = '#06101e';
+    ctx.fillRect(0, 0, W, H);
+
+    /* subtle grid */
+    ctx.strokeStyle = 'rgba(16,40,80,0.45)';
+    ctx.lineWidth = 0.5;
+    const GS = 38;
+    for (let gx = ((pan.x % GS)+GS) % GS; gx < W; gx += GS) {
+      ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
+    }
+    for (let gy = ((pan.y % GS)+GS) % GS; gy < H; gy += GS) {
+      ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+    }
+
+    ctx.save();
+    ctx.translate(pan.x, pan.y);
+
+    /* highlighted edge / node sets */
+    const hiE = new Set(), hiN = new Set();
+    if (hovN) {
+      edges.forEach((e, i) => {
+        if (e.from === hovN.id || e.to === hovN.id) { hiE.add(i); hiN.add(e.from); hiN.add(e.to); }
+      });
+    }
+
+    /* edges: dim first, then bright */
+    edges.forEach((e, i) => {
+      if (hiE.has(i)) return;
+      const a = nodeMap[e.from], b = nodeMap[e.to];
+      if (a && b) drawEdge(a, b, false);
+    });
+    edges.forEach((e, i) => {
+      if (!hiE.has(i)) return;
+      const a = nodeMap[e.from], b = nodeMap[e.to];
+      if (a && b) drawEdge(a, b, true);
+    });
+
+    /* nodes */
+    nodes.forEach(n => drawNode(n, hovN ? hiN.has(n.id) : false));
+
+    /* empty state */
+    if (nodes.length === 1) {
+      ctx.fillStyle = 'rgba(42,95,158,0.5)';
+      ctx.font = '11px monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('[ segui altri utenti per espandere la rete ]', W/2, H/2 + 50);
+    }
+
+    ctx.restore();
+  }
+
+  /* ── loop ── */
+  (function loop() {
+    if (simOn) tick();
+    render();
+    requestAnimationFrame(loop);
+  })();
+
+})();
+</script>
+{{template "statusbar" .}}
+</body>
+</html>
