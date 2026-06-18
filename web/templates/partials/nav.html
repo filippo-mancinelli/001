@@ -4,21 +4,42 @@
   <div class="container nav-inner">
     <a href="/" class="site-title">[ <span>thoughts</span> ]</a>
     {{if .User}}
-    <nav>
-      <a href="/">feed</a>
-      <a href="/search">cerca</a>
-      <a href="/@{{.User.Username}}">@{{.User.Username}}</a>
-      <a href="/notifications">notifiche</a>
-      <a href="/network">rete</a>
-      <a href="/settings">impostazioni</a>
-      <a href="/install" class="nav-install" data-pwa-install hidden>installa</a>
-    </nav>
-    <div class="nav-right">
-      <a href="/@{{.User.Username}}" class="nav-me" title="il tuo profilo">
-        <span class="avatar-lg-sm">{{template "avatar" .User}}</span>
+    <nav class="nav-bar" aria-label="navigazione principale">
+      <a href="/" class="nav-item">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/></svg>
+        <span class="nav-lbl">feed</span>
       </a>
-      <form method="POST" action="/logout" style="display:inline">
-        <button class="btn btn-sm btn-red">logout</button>
+      <a href="/search" class="nav-item">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.2-3.2"/></svg>
+        <span class="nav-lbl">cerca</span>
+      </a>
+      <a href="/network" class="nav-item">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.4"/><circle cx="18" cy="18" r="2.4"/><circle cx="12" cy="6" r="2.4"/><path d="M10.4 7.6 7.6 15.8M13.6 7.6l2.8 8.2M8.4 18h7.2"/></svg>
+        <span class="nav-lbl">rete</span>
+      </a>
+      <a href="/notifications" class="nav-item">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+        <span class="nav-lbl">notifiche</span>
+      </a>
+      <a href="/@{{.User.Username}}" class="nav-item nav-item-me">
+        <span class="nav-avatar">{{template "avatar" .User}}</span>
+        <span class="nav-lbl">profilo</span>
+      </a>
+    </nav>
+    <div class="nav-actions">
+      <a href="/settings" class="nav-act" title="impostazioni" aria-label="impostazioni">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.1 5.1l2.1 2.1M16.8 16.8l2.1 2.1M18.9 5.1l-2.1 2.1M7.2 16.8l-2.1 2.1"/></svg>
+        <span class="nav-lbl">impostazioni</span>
+      </a>
+      <a href="/install" class="nav-act nav-install" data-pwa-install hidden title="installa app" aria-label="installa app">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>
+        <span class="nav-lbl">installa</span>
+      </a>
+      <form method="POST" action="/logout" class="nav-logout">
+        <button class="btn btn-sm btn-red nav-logout-btn" title="logout" aria-label="logout">
+          <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="m14 8 4 4-4 4M18 12H9"/></svg>
+          <span class="nav-lbl">logout</span>
+        </button>
       </form>
     </div>
     {{end}}
@@ -37,10 +58,10 @@
     {{end}}
     <span class="sep">//</span>
     <span>thoughts v0.1</span>
-    <span class="sep">//</span>
-    {{if .User}}<span>sessione: @{{.User.Username}}</span>{{else}}<span>non autenticato</span>{{end}}
-    <span class="sep">//</span>
-    <span>personal knowledge network</span>
+    <span class="sep status-hide-sm">//</span>
+    {{if .User}}<span class="status-hide-sm">sessione: @{{.User.Username}}</span>{{else}}<span class="status-hide-sm">non autenticato</span>{{end}}
+    <span class="sep status-hide-sm">//</span>
+    <span class="status-hide-sm">personal knowledge network</span>
   </div>
 </footer>
 {{end}}
