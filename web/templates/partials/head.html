@@ -1,6 +1,6 @@
 {{define "head"}}
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#3b7fc4">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14' fill='%233b73b9'>%5B%5D</text></svg>">
@@ -44,5 +44,17 @@
       for (var i = 0; i < links.length; i++) links[i].hidden = false;
     });
   })();
+
+  // evidenzia la voce di navigazione corrispondente alla pagina attiva
+  document.addEventListener('DOMContentLoaded', function () {
+    var here = location.pathname;
+    var links = document.querySelectorAll('.nav-bar a, .nav-actions a');
+    for (var i = 0; i < links.length; i++) {
+      var p = links[i].getAttribute('href') || '';
+      var hashIdx = p.indexOf('#'); if (hashIdx >= 0) p = p.slice(0, hashIdx);
+      var match = (p === '/') ? (here === '/') : (here === p || here.indexOf(p + '/') === 0);
+      if (match) links[i].classList.add('is-active');
+    }
+  });
 </script>
 {{end}}

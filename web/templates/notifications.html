@@ -12,7 +12,7 @@
         <span class="notif-type">{{.Type}}</span>
         <span>{{.Message}}</span>
         {{if .Actions}}
-        <div style="margin-left:auto; display:flex; gap:0.5rem">
+        <div class="notif-actions" style="margin-left:auto; display:flex; gap:0.5rem">
           {{range .Actions}}
           <button class="btn btn-sm {{.Class}}"
             hx-post="{{.URL}}"

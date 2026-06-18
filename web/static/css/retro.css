@@ -53,7 +53,13 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(59,127,196,0.18);
+  overflow-x: hidden;
 }
+
+img, svg, canvas { max-width: 100%; }
 
 ::selection { background: var(--blue-light); color: #fff; }
 
@@ -94,7 +100,7 @@ body.htmx-busy #loadbar { opacity: 1; }
 /* ===== HEADER / NAV — barra blu lucida (title bar) ===== */
 header {
   position: sticky; top: 0; z-index: 50;
-  padding: 0.55rem 0;
+  padding: calc(0.55rem + env(safe-area-inset-top, 0px)) 0 0.55rem;
   margin-bottom: 1.5rem;
   background:
     linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0) 51%, rgba(255,255,255,0.10) 100%),
@@ -115,26 +121,42 @@ header {
 header .site-title { color: rgba(255,255,255,0.6); text-shadow: 0 1px 2px rgba(0,0,0,0.35); }
 header .site-title span { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
 
-nav { display: flex; gap: 0.3rem; flex-wrap: wrap; }
-header nav a {
+/* ===== NAV BAR (desktop: barra orizzontale; mobile: tab bar in basso) ===== */
+.nav-bar { display: flex; gap: 0.3rem; flex-wrap: wrap; align-items: center; }
+.nav-actions { margin-left: auto; display: flex; gap: 0.4rem; align-items: center; }
+
+.nav-item, .nav-act {
+  display: inline-flex; align-items: center; gap: 0.4rem;
   color: #eaf2fc; font-size: 0.85rem; font-weight: 600;
-  text-transform: capitalize; padding: 0.3rem 0.75rem; border-radius: 5px;
+  text-transform: capitalize; padding: 0.35rem 0.75rem; border-radius: 5px;
   text-shadow: 0 1px 1px rgba(0,0,0,0.25);
   transition: background 0.12s, box-shadow 0.12s;
 }
-header nav a:hover {
+.nav-item:hover, .nav-act:hover {
   background: rgba(255,255,255,0.22); text-decoration: none;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 1px 1px rgba(0,0,0,0.15);
 }
+.nav-item.is-active, .nav-act.is-active {
+  background: rgba(255,255,255,0.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), inset 0 -2px 0 rgba(255,255,255,0.7);
+}
+
+/* icone nascoste su desktop: lì comandano le etichette testuali */
+.nav-ico { width: 20px; height: 20px; flex: none; display: none; }
+
+/* avatar dentro la voce "profilo" */
+.nav-avatar { display: inline-flex; }
+.nav-avatar .avatar { width: 26px; height: 26px; font-size: 0.78rem; }
+.nav-avatar .presence { width: 9px; height: 9px; }
 
 /* link "installa app" (PWA): leggero accento per distinguerlo */
-header nav a.nav-install {
+.nav-act.nav-install {
   background: rgba(255,255,255,0.16);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
 }
-header nav a.nav-install::before { content: "\2295\00a0"; }
 
-.nav-right { margin-left: auto; display: flex; gap: 1rem; align-items: center; }
+.nav-logout { display: inline-flex; }
+.nav-logout-btn { display: inline-flex; align-items: center; gap: 0.35rem; }
 
 /* ===== PANELS — modulo con header a gradiente ===== */
 .panel {
@@ -371,6 +393,7 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 .profile-status { font-style: italic; color: #55657a; }
 .profile-bio { margin-top: 0.75rem; font-size: 0.88rem; color: #3a4654; white-space: pre-wrap; word-break: break-word; }
 .profile-meta { margin-top: 0.75rem; display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.74rem; color: var(--text-dim); }
+.profile-meta a { overflow-wrap: anywhere; word-break: break-word; }
 .profile-stats { margin-top: 0.8rem; display: flex; gap: 1.5rem; font-size: 0.82rem; color: var(--text-dim); }
 .profile-stats strong { color: var(--blue-dark); font-size: 1.05rem; }
 .profile-actions { margin-left: auto; }
@@ -395,12 +418,76 @@ input:disabled, textarea:disabled {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 640px) {
-  html { font-size: 13px; }
+  html { font-size: 13.5px; }
   :root { --panel-px: 1rem; --panel-py: 1rem; }
   .grid-2 { grid-template-columns: 1fr; }
-  .nav-inner { gap: 0.5rem 0.75rem; }
-  .nav-right { margin-left: 0; width: 100%; justify-content: flex-end; }
-  .site-title { font-size: 1.2rem; }
+  .container { padding: 0 0.85rem; }
+
+  /* niente zoom automatico su iOS quando un campo prende il focus (≥16px) */
+  input[type="text"], input[type="email"], input[type="password"],
+  textarea, select { font-size: 16px; }
+
+  /* aree di tocco più generose */
+  .btn { min-height: 40px; }
+  .btn-sm { min-height: 36px; }
+
+  /* ---- header compatto in alto ---- */
+  .nav-inner { gap: 0.5rem; flex-wrap: nowrap; }
+  .site-title { font-size: 1.15rem; flex: 1 1 auto; min-width: 0; }
+  .nav-actions { margin-left: auto; gap: 0.15rem; flex: none; }
+  .nav-act, .nav-logout-btn {
+    padding: 0; width: 40px; height: 40px;
+    justify-content: center; border-radius: 8px;
+  }
+  .nav-act .nav-lbl, .nav-logout-btn .nav-lbl { display: none; }
+  .nav-act .nav-ico, .nav-logout-btn .nav-ico { display: block; width: 22px; height: 22px; }
+
+  /* ---- la nav principale diventa una tab bar fissa in basso ---- */
+  .nav-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    display: flex; gap: 0; flex-wrap: nowrap;
+    padding: 0 0 env(safe-area-inset-bottom, 0px);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0) 40%),
+      linear-gradient(180deg, #5b96d8 0%, #3b7fc4 55%, #2f6cae 100%);
+    border-top: 1px solid #234f84;
+    box-shadow: 0 -2px 8px rgba(20,40,70,0.35), inset 0 1px 0 rgba(255,255,255,0.45);
+  }
+  .nav-item {
+    flex: 1 1 0; min-width: 0; flex-direction: column; gap: 2px;
+    padding: 0.45rem 0.2rem 0.4rem; border-radius: 0;
+    min-height: 56px; justify-content: center; text-transform: lowercase;
+  }
+  .nav-item:hover { background: transparent; box-shadow: none; }
+  .nav-item.is-active {
+    background: rgba(255,255,255,0.16);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,0.85);
+  }
+  .nav-item .nav-ico { display: block; width: 23px; height: 23px; }
+  .nav-item .nav-lbl {
+    display: block; font-size: 0.62rem; font-weight: 600;
+    line-height: 1; letter-spacing: 0; max-width: 100%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .nav-avatar .avatar { width: 23px; height: 23px; font-size: 0.7rem; }
+
+  /* spazio in fondo per non finire sotto la tab bar */
+  body:has(.nav-bar) { padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
+
+  /* ---- aggiustamenti componenti ---- */
+  .profile-header { gap: 1rem; }
+  .profile-id { min-width: 0; }
+  .profile-actions { margin-left: 0; width: 100%; margin-top: 0.5rem; }
+  .profile-actions .btn { width: 100%; }
+
+  .form-row { flex-direction: column; gap: 0; }
+
+  .notif-row { flex-wrap: wrap; }
+  .notif-row .notif-type { min-width: 0; }
+  .notif-actions { margin-left: 0 !important; width: 100%; margin-top: 0.4rem; }
+
+  .statusbar .container { gap: 0.5rem; font-size: 0.66rem; justify-content: center; }
+  .status-hide-sm { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
