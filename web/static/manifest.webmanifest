@@ -1,0 +1,47 @@
+{
+  "name": "thoughts // personal knowledge network",
+  "short_name": "thoughts",
+  "description": "thoughts — personal knowledge network. Condividi pensieri e costruisci la tua rete.",
+  "lang": "it",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#c3d6ec",
+  "theme_color": "#3b7fc4",
+  "categories": ["social", "productivity"],
+  "icons": [
+    {
+      "src": "/static/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nuovo pensiero",
+      "short_name": "Scrivi",
+      "url": "/thoughts/new",
+      "description": "Scrivi un nuovo pensiero"
+    },
+    {
+      "name": "Feed",
+      "short_name": "Feed",
+      "url": "/"
+    }
+  ]
+}
