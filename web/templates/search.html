@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>thoughts // cerca</title></head>
+<body>
+{{template "nav" .}}
+<div class="container" style="padding-top:1rem">
+  <div class="panel">
+    <div class="panel-title">// trova utenti</div>
+    <form method="GET" action="/search" style="display:flex; gap:0.5rem">
+      <input type="text" name="q" value="{{.Query}}" placeholder="cerca per username..." autofocus>
+      <button class="btn btn-cyan">cerca</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">// risultati{{if .Query}} per "{{.Query}}"{{end}}</div>
+    {{if .Results}}
+      {{range .Results}}
+      <div class="user-row">
+        <a href="/@{{.Username}}" class="username">{{.Username}}</a>
+        {{if .Bio}}<span style="color:var(--text-dim); font-size:0.8rem">{{.Bio}}</span>{{end}}
+      </div>
+      {{end}}
+    {{else}}
+    <div class="empty">
+      {{if .Query}}nessun utente trovato.{{else}}inserisci un username per cercare.{{end}}
+    </div>
+    {{end}}
+  </div>
+</div>
+{{template "statusbar" .}}
+</body>
+</html>

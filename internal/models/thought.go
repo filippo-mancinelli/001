@@ -27,4 +27,8 @@ type ResolvedThought struct {
 	SubjectName string
 	Content     string
 	IsDirect    bool // true se il viewer sta vedendo la versione diretta (audience=subject)
+
+	// stato richiesta "sono curioso" relativo al viewer corrente
+	CanSendCurious bool // il viewer può chiedere di vedere la versione diretta
+	CuriousPending bool // il viewer ha una richiesta in attesa
 }

@@ -26,11 +26,10 @@
       </div>
       {{end}}
     {{else}}
-    <div style="color:var(--text-dim); font-size:0.85rem; padding:1rem 0">
-      nessuna notifica.
-    </div>
+    <div class="empty">nessuna notifica.</div>
     {{end}}
   </div>
 </div>
+{{template "statusbar" .}}
 </body>
 </html>

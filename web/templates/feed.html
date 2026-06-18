@@ -11,9 +11,9 @@
         {{template "thought-card" .}}
       {{end}}
     {{else}}
-    <div style="color:var(--text-dim); font-size:0.85rem; padding:1rem 0">
+    <div class="empty">
       nessun aggiornamento.<br>
-      <span style="font-size:0.75rem">inizia a seguire persone per vedere i loro pensieri.</span>
+      <span class="empty-hint">inizia a seguire persone per vedere i loro pensieri.</span>
     </div>
     {{end}}
   </div>
@@ -26,5 +26,6 @@
     </form>
   </div>
 </div>
+{{template "statusbar" .}}
 </body>
 </html>

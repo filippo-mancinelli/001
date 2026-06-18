@@ -15,11 +15,7 @@ func GetFeed(c *gin.Context) {
 	rows, err := db.Pool.Query(context.Background(), `
 		SELECT DISTINCT ON (t.id)
 			t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
-			COALESCE(
-				(SELECT content FROM thought_versions WHERE thought_id = t.id AND audience_id = $1),
-				(SELECT content FROM thought_versions WHERE thought_id = t.id AND audience_id IS NULL)
-			) AS content,
-			(t.subject_id = $1) AS is_direct
+			`+thoughtResolveCols("$1")+`
 		FROM thoughts t
 		JOIN follows f ON f.following_id = t.author_id AND f.follower_id = $1
 		JOIN users u_a ON u_a.id = t.author_id
@@ -35,7 +31,8 @@ func GetFeed(c *gin.Context) {
 	var thoughts []models.ResolvedThought
 	for rows.Next() {
 		var rt models.ResolvedThought
-		rows.Scan(&rt.ThoughtID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName, &rt.Content, &rt.IsDirect)
+		rows.Scan(&rt.ThoughtID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
+			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending)
 		if rt.Content != "" {
 			thoughts = append(thoughts, rt)
 		}
@@ -50,7 +47,7 @@ func GetProfile(c *gin.Context) {
 
 	var profile models.User
 	err := db.Pool.QueryRow(context.Background(),
-		`SELECT id, username, email, bio, created_at FROM users WHERE username = $1`, username,
+		`SELECT id, username, email, COALESCE(bio, ''), created_at FROM users WHERE username = $1`, username,
 	).Scan(&profile.ID, &profile.Username, &profile.Email, &profile.Bio, &profile.CreatedAt)
 	if err != nil {
 		c.String(http.StatusNotFound, "utente non trovato")
@@ -80,14 +77,19 @@ func GetProfile(c *gin.Context) {
 		following = append(following, u)
 	}
 
-	// pensieri scritti dal profilo, risolti per il viewer corrente
+	// pensieri scritti dal profilo, risolti per il viewer corrente.
+	// l'autore vede sempre tutto ciò che ha scritto (versione diretta inclusa).
 	thoughtRows, _ := db.Pool.Query(context.Background(), `
 		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
-			COALESCE(
-				(SELECT content FROM thought_versions WHERE thought_id = t.id AND audience_id = $2),
-				(SELECT content FROM thought_versions WHERE thought_id = t.id AND audience_id IS NULL)
-			) AS content,
-			(t.subject_id = $2 OR t.author_id = $2) AS is_direct
+			CASE WHEN t.author_id = $2 THEN
+				COALESCE(
+					(SELECT content FROM thought_versions WHERE thought_id = t.id AND audience_id = t.subject_id),
+					(SELECT content FROM thought_versions WHERE thought_id = t.id AND audience_id IS NULL)
+				)
+			ELSE `+thoughtResolveContent("$2")+` END AS content,
+			(t.author_id = $2 OR `+thoughtIsDirect("$2")+`) AS is_direct,
+			(t.author_id <> $2 AND `+thoughtCanSendCurious("$2")+`) AS can_send_curious,
+			`+thoughtCuriousPending("$2")+` AS curious_pending
 		FROM thoughts t
 		JOIN users u_a ON u_a.id = t.author_id
 		JOIN users u_s ON u_s.id = t.subject_id
@@ -99,7 +101,8 @@ func GetProfile(c *gin.Context) {
 	var thoughts []models.ResolvedThought
 	for thoughtRows.Next() {
 		var rt models.ResolvedThought
-		thoughtRows.Scan(&rt.ThoughtID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName, &rt.Content, &rt.IsDirect)
+		thoughtRows.Scan(&rt.ThoughtID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
+			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending)
 		if rt.Content != "" {
 			thoughts = append(thoughts, rt)
 		}
