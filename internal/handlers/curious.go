@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"thoughts/internal/db"
 	"thoughts/internal/models"
@@ -42,15 +41,12 @@ func PostCurious(c *gin.Context) {
 	).Scan(&reqID)
 
 	// notifica al subject
-	payload, _ := json.Marshal(map[string]string{
+	notify(subjectID, "curious_request", map[string]string{
 		"requester_id":   user.ID,
 		"requester_name": user.Username,
 		"thought_id":     thoughtID,
 		"request_id":     reqID,
 	})
-	db.Pool.Exec(context.Background(), `
-		INSERT INTO notifications (user_id, type, payload) VALUES ($1, 'curious_request', $2)
-	`, subjectID, string(payload))
 
 	// risposta HTMX: mostra stato pending
 	c.Data(http.StatusOK, "text/html", []byte(`
@@ -80,13 +76,10 @@ func PostCuriousAccept(c *gin.Context) {
 		`UPDATE curious_requests SET status = 'accepted' WHERE id = $1`, reqID)
 
 	// notifica al requester
-	payload, _ := json.Marshal(map[string]string{
-		"thought_id":   thoughtID,
-		"accepted_by":  user.Username,
+	notify(requesterID, "curious_accepted", map[string]string{
+		"thought_id":  thoughtID,
+		"accepted_by": user.Username,
 	})
-	db.Pool.Exec(context.Background(), `
-		INSERT INTO notifications (user_id, type, payload) VALUES ($1, 'curious_accepted', $2)
-	`, requesterID, string(payload))
 
 	c.Data(http.StatusOK, "text/html", []byte(`
 		<div class="notif-row" style="color:var(--green); font-size:0.8rem">

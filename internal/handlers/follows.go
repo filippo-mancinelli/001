@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"thoughts/internal/db"
 	"thoughts/internal/models"
@@ -30,13 +29,10 @@ func PostFollow(c *gin.Context) {
 
 	// notifica al seguito solo se è un follow nuovo (e non sé stesso)
 	if tag.RowsAffected() > 0 && targetID != user.ID {
-		payload, _ := json.Marshal(map[string]string{
+		notify(targetID, "new_follower", map[string]string{
 			"follower_id":   user.ID,
 			"follower_name": user.Username,
 		})
-		db.Pool.Exec(context.Background(), `
-			INSERT INTO notifications (user_id, type, payload) VALUES ($1, 'new_follower', $2)
-		`, targetID, string(payload))
 	}
 
 	// risposta HTMX: bottone aggiornato

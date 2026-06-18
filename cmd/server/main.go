@@ -63,6 +63,10 @@ func main() {
 	r.POST("/login", handlers.PostLogin)
 	r.GET("/register", handlers.GetRegister)
 	r.POST("/register", handlers.PostRegister)
+	r.GET("/forgot", handlers.GetForgot)
+	r.POST("/forgot", handlers.PostForgot)
+	r.GET("/reset", handlers.GetReset)
+	r.POST("/reset", handlers.PostReset)
 
 	auth := r.Group("/", middleware.Auth())
 	{

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>thoughts // reimposta password</title></head>
+<body>
+<div class="container" style="max-width:420px; padding-top:5rem">
+  <div style="text-align:center; margin-bottom:2rem">
+    <div class="site-title" style="font-size:2.2rem">[ <span>thoughts</span> ]</div>
+    <div class="auth-tagline">REIMPOSTA CREDENZIALI</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">// nuova password</div>
+
+    {{if .done}}
+    <div class="alert alert-ok">
+      password aggiornata. tutte le sessioni precedenti sono state disconnesse.
+    </div>
+    <div style="text-align:center; font-size:0.8rem; margin-top:1rem">
+      <a href="/login">accedi con la nuova password</a>
+    </div>
+    {{else if .invalid}}
+    <div class="alert alert-error">
+      link non valido o scaduto. richiedi un nuovo link di reset.
+    </div>
+    <div style="text-align:center; font-size:0.8rem; margin-top:1rem">
+      <a href="/forgot">richiedi un nuovo link</a>
+    </div>
+    {{else}}
+    {{if .error}}<div class="alert alert-error">{{.error}}</div>{{end}}
+    <form method="POST" action="/reset">
+      <input type="hidden" name="token" value="{{.token}}">
+      <div class="form-group">
+        <label>nuova password</label>
+        <input type="password" name="password" minlength="6" autocomplete="new-password" autofocus required>
+      </div>
+      <button type="submit" class="btn btn-cyan" style="width:100%">[ imposta password ]</button>
+    </form>
+    {{end}}
+  </div>
+</div>
+</body>
+</html>
