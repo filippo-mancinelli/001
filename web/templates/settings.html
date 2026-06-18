@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>thoughts // impostazioni</title></head>
+<body>
+{{template "nav" .}}
+<div class="container" style="padding-top:1rem">
+
+  {{if .Saved}}
+  <div class="alert alert-ok">impostazioni salvate: {{.Saved}}</div>
+  {{end}}
+  {{if .Err}}
+  <div class="alert alert-error">{{.Err}}</div>
+  {{end}}
+
+  <!-- personalizzazione profilo -->
+  <div class="panel">
+    <div class="panel-title">// personalizza profilo</div>
+
+    <div class="settings-grid">
+      <div class="settings-preview">
+        <div class="avatar-lg">{{template "avatar" .Profile}}</div>
+        <div class="settings-preview-name">{{.Profile.Display}}</div>
+        <div class="profile-handle">@{{.Profile.Username}}</div>
+      </div>
+
+      <form method="POST" action="/settings/profile" class="settings-form">
+        <div class="form-group">
+          <label>nome visualizzato</label>
+          <input type="text" name="display_name" maxlength="64" value="{{.Profile.DisplayName}}" placeholder="@{{.Profile.Username}}">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex:1">
+            <label>stato</label>
+            <select name="presence">
+              <option value="online"  {{if eq .Profile.Presence "online"}}selected{{end}}>online</option>
+              <option value="away"    {{if eq .Profile.Presence "away"}}selected{{end}}>assente</option>
+              <option value="busy"    {{if eq .Profile.Presence "busy"}}selected{{end}}>occupato</option>
+              <option value="offline" {{if eq .Profile.Presence "offline"}}selected{{end}}>invisibile</option>
+            </select>
+          </div>
+          <div class="form-group" style="flex:2">
+            <label>messaggio di stato</label>
+            <input type="text" name="status" maxlength="140" value="{{.Profile.Status}}" placeholder="a cosa stai pensando?">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>bio</label>
+          <textarea name="bio" maxlength="1000" placeholder="raccontati in poche righe...">{{.Profile.Bio}}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label>immagine profilo (url)</label>
+          <input type="text" name="avatar_url" maxlength="255" value="{{.Profile.AvatarURL}}" placeholder="https://...">
+          <div class="form-hint">lascia vuoto per usare l'avatar generato dalle iniziali.</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group" style="flex:1">
+            <label>luogo</label>
+            <input type="text" name="location" maxlength="120" value="{{.Profile.Location}}" placeholder="città, paese">
+          </div>
+          <div class="form-group" style="flex:1">
+            <label>sito web</label>
+            <input type="text" name="website" maxlength="255" value="{{.Profile.Website}}" placeholder="https://...">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-cyan">[ salva profilo ]</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <!-- impostazioni account -->
+    <div class="panel">
+      <div class="panel-title">// account</div>
+      <form method="POST" action="/settings/account">
+        <div class="form-group">
+          <label>username</label>
+          <input type="text" value="{{.Profile.Username}}" disabled>
+          <div class="form-hint">lo username non è modificabile.</div>
+        </div>
+        <div class="form-group">
+          <label>email</label>
+          <input type="email" name="email" value="{{.Profile.Email}}" required>
+        </div>
+        <button type="submit" class="btn">[ aggiorna account ]</button>
+      </form>
+    </div>
+
+    <!-- cambio password -->
+    <div class="panel">
+      <div class="panel-title">// sicurezza</div>
+      <form method="POST" action="/settings/password">
+        <div class="form-group">
+          <label>password attuale</label>
+          <input type="password" name="current_password" required>
+        </div>
+        <div class="form-group">
+          <label>nuova password</label>
+          <input type="password" name="new_password" minlength="6" required>
+          <div class="form-hint">minimo 6 caratteri. le altre sessioni verranno disconnesse.</div>
+        </div>
+        <button type="submit" class="btn btn-amber">[ cambia password ]</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">// sessione</div>
+    <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:0.75rem">
+      vai al tuo <a href="/@{{.Profile.Username}}">profilo pubblico</a> per vedere come ti vedono gli altri.
+    </p>
+    <form method="POST" action="/logout">
+      <button type="submit" class="btn btn-red btn-sm">[ esci dall'account ]</button>
+    </form>
+  </div>
+
+</div>
+{{template "statusbar" .}}
+</body>
+</html>

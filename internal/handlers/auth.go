@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"thoughts/internal/db"
+	mailer "thoughts/internal/email"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -79,6 +80,10 @@ func PostRegister(c *gin.Context) {
 		c.HTML(http.StatusConflict, "register.html", gin.H{"error": "username o email già in uso"})
 		return
 	}
+
+	// email di benvenuto (asincrona, non blocca la registrazione)
+	subject, html := mailer.Welcome(username)
+	mailer.SendAsync(email, subject, html)
 
 	token := uuid.NewString()
 	expires := time.Now().Add(30 * 24 * time.Hour)

@@ -324,6 +324,68 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 /* ===== AUTH SCREENS ===== */
 .auth-tagline { color: #5a6a7c; font-size: 0.74rem; font-weight: 600; margin-top: 0.4rem; letter-spacing: 0.08em; }
 
+/* ===== AVATAR & PRESENCE ===== */
+.avatar-wrap { position: relative; display: inline-flex; vertical-align: middle; }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  object-fit: cover; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 1px 2px rgba(30,50,80,0.2);
+  font-size: 1rem;
+}
+.avatar-fallback {
+  color: #fff; font-weight: 700; text-transform: uppercase;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.28);
+}
+.presence {
+  position: absolute; right: -1px; bottom: -1px;
+  width: 11px; height: 11px; border-radius: 50%;
+  border: 2px solid #fff; box-sizing: border-box;
+}
+.presence-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+.presence-online  { background: #2e8b3d; }
+.presence-away    { background: #e0a93a; }
+.presence-busy    { background: #cc3333; }
+.presence-offline { background: #9aa7b4; }
+
+/* dimensioni per contesto (controllate dal genitore) */
+.avatar-lg .avatar { width: 76px; height: 76px; font-size: 2rem; }
+.avatar-lg .presence { width: 18px; height: 18px; }
+.avatar-sm .avatar, .avatar-lg-sm .avatar { width: 30px; height: 30px; font-size: 0.85rem; }
+.avatar-sm .presence, .avatar-lg-sm .presence { width: 9px; height: 9px; }
+
+/* ===== PROFILE HEADER ===== */
+.profile-header { display: flex; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
+.profile-id { flex: 1; min-width: 200px; }
+.profile-name { font-size: 1.5rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+.profile-handle { color: var(--cyan); font-size: 0.9rem; font-weight: 600; }
+.profile-presence { display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; color: var(--text-dim); margin-top: 0.5rem; flex-wrap: wrap; }
+.profile-status { font-style: italic; color: #55657a; }
+.profile-bio { margin-top: 0.75rem; font-size: 0.88rem; color: #3a4654; white-space: pre-wrap; word-break: break-word; }
+.profile-meta { margin-top: 0.75rem; display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.74rem; color: var(--text-dim); }
+.profile-stats { margin-top: 0.8rem; display: flex; gap: 1.5rem; font-size: 0.82rem; color: var(--text-dim); }
+.profile-stats strong { color: var(--blue-dark); font-size: 1.05rem; }
+.profile-actions { margin-left: auto; }
+.user-row-name { color: var(--text-dim); font-size: 0.8rem; }
+
+/* ===== NAV AVATAR ===== */
+.nav-me { display: inline-flex; align-items: center; }
+.nav-me:hover { text-decoration: none; }
+.status-text { font-style: italic; }
+
+/* ===== SETTINGS ===== */
+.settings-grid { display: flex; gap: 2rem; flex-wrap: wrap; }
+.settings-preview { text-align: center; min-width: 120px; }
+.settings-preview-name { margin-top: 0.6rem; font-weight: 700; }
+.settings-form { flex: 1; min-width: 260px; }
+.form-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+.form-hint { font-size: 0.72rem; color: #8c99a8; margin-top: 0.3rem; }
+input:disabled, textarea:disabled {
+  background: #eef2f7; color: #8c99a8; cursor: not-allowed;
+  box-shadow: none;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 640px) {
   html { font-size: 13px; }

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>thoughts // recupero password</title></head>
+<body>
+<div class="container" style="max-width:420px; padding-top:5rem">
+  <div style="text-align:center; margin-bottom:2rem">
+    <div class="site-title" style="font-size:2.2rem">[ <span>thoughts</span> ]</div>
+    <div class="auth-tagline">RECUPERO ACCESSO AL NODO</div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">// password dimenticata</div>
+
+    {{if .sent}}
+    <div class="alert alert-ok">
+      se l'indirizzo è registrato, riceverai a breve un'email con le istruzioni per reimpostare la password.
+    </div>
+    <div style="text-align:center; font-size:0.8rem; margin-top:1rem">
+      <a href="/login">torna al login</a>
+    </div>
+    {{else}}
+    <p style="font-size:0.82rem; color:var(--text-dim); margin-bottom:1rem">
+      inserisci l'email del tuo account: ti invieremo un link per reimpostare la password.
+    </p>
+    <form method="POST" action="/forgot">
+      <div class="form-group">
+        <label>email</label>
+        <input type="email" name="email" autocomplete="email" autofocus required>
+      </div>
+      <button type="submit" class="btn btn-cyan" style="width:100%">[ invia link di reset ]</button>
+    </form>
+
+    <hr class="divider">
+    <div style="text-align:center; font-size:0.75rem; color:var(--text-dim)">
+      ti sei ricordato? <a href="/login">accedi</a>
+    </div>
+    {{end}}
+  </div>
+</div>
+</body>
+</html>
