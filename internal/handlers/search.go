@@ -19,7 +19,7 @@ func GetSearch(c *gin.Context) {
 	var results []models.User
 	if q != "" {
 		rows, err := db.Pool.Query(context.Background(), `
-			SELECT id, username, COALESCE(bio, '')
+			SELECT id, username, COALESCE(bio, ''), COALESCE(display_name,''), COALESCE(avatar_url,''), COALESCE(presence,'online')
 			FROM users
 			WHERE username ILIKE '%' || $1 || '%' AND id <> $2
 			ORDER BY username
@@ -29,7 +29,7 @@ func GetSearch(c *gin.Context) {
 			defer rows.Close()
 			for rows.Next() {
 				var u models.User
-				rows.Scan(&u.ID, &u.Username, &u.Bio)
+				rows.Scan(&u.ID, &u.Username, &u.Bio, &u.DisplayName, &u.AvatarURL, &u.Presence)
 				results = append(results, u)
 			}
 		}

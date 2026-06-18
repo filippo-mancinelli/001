@@ -20,15 +20,13 @@ func Auth() gin.HandlerFunc {
 		}
 
 		var user models.User
-		err = db.Pool.QueryRow(context.Background(), `
-			SELECT u.id, u.username, u.email, COALESCE(u.bio, ''), u.created_at
+		row := db.Pool.QueryRow(context.Background(), `
+			SELECT `+models.UserColumns("u")+`
 			FROM sessions s
 			JOIN users u ON u.id = s.user_id
 			WHERE s.token = $1 AND s.expires_at > $2
-		`, token, time.Now()).Scan(
-			&user.ID, &user.Username, &user.Email, &user.Bio, &user.CreatedAt,
-		)
-		if err != nil {
+		`, token, time.Now())
+		if err = models.ScanUser(row, &user); err != nil {
 			c.SetCookie("session_token", "", -1, "/", "", false, true)
 			c.Redirect(http.StatusFound, "/login")
 			c.Abort()
@@ -49,15 +47,13 @@ func OptionalAuth() gin.HandlerFunc {
 		}
 
 		var user models.User
-		err = db.Pool.QueryRow(context.Background(), `
-			SELECT u.id, u.username, u.email, COALESCE(u.bio, ''), u.created_at
+		row := db.Pool.QueryRow(context.Background(), `
+			SELECT `+models.UserColumns("u")+`
 			FROM sessions s
 			JOIN users u ON u.id = s.user_id
 			WHERE s.token = $1 AND s.expires_at > $2
-		`, token, time.Now()).Scan(
-			&user.ID, &user.Username, &user.Email, &user.Bio, &user.CreatedAt,
-		)
-		if err == nil {
+		`, token, time.Now())
+		if err = models.ScanUser(row, &user); err == nil {
 			c.Set("user", user)
 		}
 		c.Next()

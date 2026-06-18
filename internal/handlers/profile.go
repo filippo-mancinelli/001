@@ -46,10 +46,9 @@ func GetProfile(c *gin.Context) {
 	username := c.Param("username")
 
 	var profile models.User
-	err := db.Pool.QueryRow(context.Background(),
-		`SELECT id, username, email, COALESCE(bio, ''), created_at FROM users WHERE username = $1`, username,
-	).Scan(&profile.ID, &profile.Username, &profile.Email, &profile.Bio, &profile.CreatedAt)
-	if err != nil {
+	row := db.Pool.QueryRow(context.Background(),
+		`SELECT `+models.UserColumns("")+` FROM users WHERE username = $1`, username)
+	if err := models.ScanUser(row, &profile); err != nil {
 		c.String(http.StatusNotFound, "utente non trovato")
 		return
 	}
@@ -64,18 +63,15 @@ func GetProfile(c *gin.Context) {
 		).Scan(&isFollowing)
 	}
 
-	// connessioni del profilo visualizzato
-	followRows, _ := db.Pool.Query(context.Background(),
-		`SELECT u.id, u.username FROM follows f JOIN users u ON u.id = f.following_id WHERE f.follower_id = $1`,
-		profile.ID,
-	)
-	defer followRows.Close()
-	var following []models.User
-	for followRows.Next() {
-		var u models.User
-		followRows.Scan(&u.ID, &u.Username)
-		following = append(following, u)
-	}
+	// rete di conoscenze del profilo: chi segue (following) e chi lo segue (followers)
+	following := connections(c, `
+		SELECT u.id, u.username, COALESCE(u.display_name,''), COALESCE(u.avatar_url,''), COALESCE(u.presence,'online')
+		FROM follows f JOIN users u ON u.id = f.following_id WHERE f.follower_id = $1
+		ORDER BY u.username`, profile.ID)
+	followers := connections(c, `
+		SELECT u.id, u.username, COALESCE(u.display_name,''), COALESCE(u.avatar_url,''), COALESCE(u.presence,'online')
+		FROM follows f JOIN users u ON u.id = f.follower_id WHERE f.following_id = $1
+		ORDER BY u.username`, profile.ID)
 
 	// pensieri scritti dal profilo, risolti per il viewer corrente.
 	// l'autore vede sempre tutto ciò che ha scritto (versione diretta inclusa).
@@ -109,11 +105,32 @@ func GetProfile(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "profile.html", gin.H{
-		"User":        user,
-		"Profile":     profile,
-		"IsSelf":      isSelf,
-		"IsFollowing": isFollowing,
-		"Following":   following,
-		"Thoughts":    thoughts,
+		"User":           user,
+		"Profile":        profile,
+		"IsSelf":         isSelf,
+		"IsFollowing":    isFollowing,
+		"Following":      following,
+		"Followers":      followers,
+		"FollowingCount": len(following),
+		"FollowersCount": len(followers),
+		"Thoughts":       thoughts,
 	})
+}
+
+// connections esegue una query che restituisce
+// (id, username, display_name, avatar_url, presence) e la mappa su []models.User.
+func connections(c *gin.Context, query string, args ...any) []models.User {
+	rows, err := db.Pool.Query(context.Background(), query, args...)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+	var users []models.User
+	for rows.Next() {
+		var u models.User
+		if rows.Scan(&u.ID, &u.Username, &u.DisplayName, &u.AvatarURL, &u.Presence) == nil {
+			users = append(users, u)
+		}
+	}
+	return users
 }

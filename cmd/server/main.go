@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"log"
 	"os"
+	"path/filepath"
+	"sort"
+	"strings"
 	"thoughts/internal/db"
 	"thoughts/internal/handlers"
 	"thoughts/internal/middleware"
@@ -12,6 +16,27 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
+
+// templateFuncs espone helper usati nei template (avatar/iniziali, ecc.).
+var templateFuncs = template.FuncMap{
+	// initial restituisce la prima lettera maiuscola, per gli avatar fallback.
+	"initial": func(s string) string {
+		r := []rune(strings.TrimSpace(s))
+		if len(r) == 0 {
+			return "?"
+		}
+		return strings.ToUpper(string(r[0]))
+	},
+	// avatarColor deriva un colore stabile dallo username (avatar generato).
+	"avatarColor": func(s string) string {
+		var h int32
+		for _, r := range s {
+			h = h*31 + r
+		}
+		hue := ((h % 360) + 360) % 360
+		return fmt.Sprintf("hsl(%d, 55%%, 52%%)", hue)
+	},
+}
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -30,7 +55,7 @@ func main() {
 	r := gin.Default()
 	r.Static("/static", "web/static")
 
-	tmpl := template.Must(template.New("").ParseGlob("web/templates/*.html"))
+	tmpl := template.Must(template.New("").Funcs(templateFuncs).ParseGlob("web/templates/*.html"))
 	tmpl = template.Must(tmpl.ParseGlob("web/templates/partials/*.html"))
 	r.SetHTMLTemplate(tmpl)
 
@@ -44,6 +69,10 @@ func main() {
 		auth.POST("/logout", handlers.PostLogout)
 		auth.GET("/", handlers.GetFeed)
 		auth.GET("/@:username", handlers.GetProfile)
+		auth.GET("/settings", handlers.GetSettings)
+		auth.POST("/settings/profile", handlers.PostProfileSettings)
+		auth.POST("/settings/account", handlers.PostAccountSettings)
+		auth.POST("/settings/password", handlers.PostPasswordSettings)
 		auth.GET("/search", handlers.GetSearch)
 		auth.POST("/follow/:username", handlers.PostFollow)
 		auth.DELETE("/follow/:username", handlers.DeleteFollow)
@@ -70,10 +99,20 @@ func main() {
 }
 
 func runMigrations() error {
-	sql, err := os.ReadFile("migrations/001_init.sql")
+	files, err := filepath.Glob("migrations/*.sql")
 	if err != nil {
 		return err
 	}
-	_, err = db.Pool.Exec(context.Background(), string(sql))
-	return err
+	sort.Strings(files)
+	for _, f := range files {
+		sql, err := os.ReadFile(f)
+		if err != nil {
+			return err
+		}
+		if _, err := db.Pool.Exec(context.Background(), string(sql)); err != nil {
+			return fmt.Errorf("%s: %w", f, err)
+		}
+		log.Printf("migration applied: %s", filepath.Base(f))
+	}
+	return nil
 }

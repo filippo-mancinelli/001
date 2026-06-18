@@ -8,18 +8,33 @@
   <!-- profilo header -->
   <div class="panel">
     <div class="panel-title">// profilo</div>
-    <div style="display:flex; align-items:flex-start; gap:2rem">
-      <div>
-        <div style="font-size:1.4rem; color:var(--cyan)">@{{.Profile.Username}}</div>
+    <div class="profile-header">
+      <div class="avatar-lg">{{template "avatar" .Profile}}</div>
+      <div class="profile-id">
+        <div class="profile-name">{{.Profile.Display}}</div>
+        <div class="profile-handle">@{{.Profile.Username}}</div>
+        <div class="profile-presence">
+          <span class="presence-dot presence-{{if .Profile.Presence}}{{.Profile.Presence}}{{else}}online{{end}}"></span>
+          <span>{{if .Profile.Presence}}{{.Profile.Presence}}{{else}}online{{end}}</span>
+          {{if .Profile.Status}}<span class="profile-status">“{{.Profile.Status}}”</span>{{end}}
+        </div>
         {{if .Profile.Bio}}
-        <div style="color:var(--text-dim); margin-top:0.5rem; font-size:0.85rem">{{.Profile.Bio}}</div>
+        <div class="profile-bio">{{.Profile.Bio}}</div>
         {{end}}
-        <div style="font-size:0.7rem; color:var(--text-dim); margin-top:0.75rem">
-          membro dal {{.Profile.CreatedAt.Format "2006-01-02"}}
+        <div class="profile-meta">
+          {{if .Profile.Location}}<span>📍 {{.Profile.Location}}</span>{{end}}
+          {{if .Profile.Website}}<span>🔗 <a href="{{.Profile.Website}}" target="_blank" rel="noopener noreferrer">{{.Profile.Website}}</a></span>{{end}}
+          <span>membro dal {{.Profile.CreatedAt.Format "2006-01-02"}}</span>
+        </div>
+        <div class="profile-stats">
+          <span><strong>{{.FollowingCount}}</strong> conoscenze</span>
+          <span><strong>{{.FollowersCount}}</strong> seguito da</span>
         </div>
       </div>
-      <div style="margin-left:auto; display:flex; flex-direction:column; gap:0.5rem; align-items:flex-end">
-        {{if not .IsSelf}}
+      <div class="profile-actions">
+        {{if .IsSelf}}
+          <a href="/settings" class="btn btn-sm">[ personalizza profilo ]</a>
+        {{else}}
           {{if .IsFollowing}}
           <button id="follow-btn" class="btn btn-red btn-sm"
             hx-delete="/follow/{{.Profile.Username}}"
@@ -40,47 +55,63 @@
     </div>
   </div>
 
+  <!-- rete di conoscenze -->
   <div class="grid-2">
-
-    <!-- connessioni (following) -->
     <div class="panel">
-      <div class="panel-title">// connessioni</div>
+      <div class="panel-title">// conoscenze ({{.FollowingCount}})</div>
       {{if .Following}}
         {{range .Following}}
         <div class="user-row">
+          <span class="avatar-sm">{{template "avatar" .}}</span>
           <a href="/@{{.Username}}" class="username">{{.Username}}</a>
+          {{if .DisplayName}}<span class="user-row-name">{{.DisplayName}}</span>{{end}}
         </div>
         {{end}}
       {{else}}
-      <div class="empty">nessuna connessione</div>
+      <div class="empty">nessuna conoscenza nella rete.</div>
       {{end}}
     </div>
 
-    <!-- pensieri scritti da questo profilo -->
     <div class="panel">
-      <div class="panel-title">// pensieri</div>
-      {{if .IsSelf}}
-      <div style="margin-bottom:0.75rem">
-        <button class="btn btn-sm"
-          hx-get="/thoughts/new"
-          hx-target="#thought-editor-area"
-          hx-swap="innerHTML">
-          [ + nuovo pensiero ]
-        </button>
-      </div>
-      <div id="thought-editor-area"></div>
-      {{end}}
-
-      {{if .Thoughts}}
-        {{range .Thoughts}}
-          {{template "thought-card" .}}
+      <div class="panel-title">// seguito da ({{.FollowersCount}})</div>
+      {{if .Followers}}
+        {{range .Followers}}
+        <div class="user-row">
+          <span class="avatar-sm">{{template "avatar" .}}</span>
+          <a href="/@{{.Username}}" class="username">{{.Username}}</a>
+          {{if .DisplayName}}<span class="user-row-name">{{.DisplayName}}</span>{{end}}
+        </div>
         {{end}}
       {{else}}
-      <div class="empty">nessun pensiero ancora</div>
+      <div class="empty">ancora nessuno nella rete.</div>
       {{end}}
     </div>
-
   </div>
+
+  <!-- pensieri scritti da questo profilo -->
+  <div class="panel">
+    <div class="panel-title">// pensieri</div>
+    {{if .IsSelf}}
+    <div style="margin-bottom:0.75rem">
+      <button class="btn btn-sm"
+        hx-get="/thoughts/new"
+        hx-target="#thought-editor-area"
+        hx-swap="innerHTML">
+        [ + nuovo pensiero ]
+      </button>
+    </div>
+    <div id="thought-editor-area"></div>
+    {{end}}
+
+    {{if .Thoughts}}
+      {{range .Thoughts}}
+        {{template "thought-card" .}}
+      {{end}}
+    {{else}}
+    <div class="empty">nessun pensiero ancora</div>
+    {{end}}
+  </div>
+
 </div>
 {{template "statusbar" .}}
 </body>
