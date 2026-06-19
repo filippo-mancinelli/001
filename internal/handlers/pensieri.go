@@ -3,13 +3,13 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"thoughts/internal/db"
-	"thoughts/internal/models"
+	"pensieri/internal/db"
+	"pensieri/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetThoughtEditor(c *gin.Context) {
+func GetEditorPensiero(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 
 	rows, _ := db.Pool.Query(context.Background(),
@@ -25,15 +25,15 @@ func GetThoughtEditor(c *gin.Context) {
 		following = append(following, u)
 	}
 
-	c.HTML(http.StatusOK, "thought-editor", gin.H{"Following": following})
+	c.HTML(http.StatusOK, "pensiero-editor", gin.H{"Following": following})
 }
 
-// CancelThoughtEditor svuota l'area dell'editor (risposta HTMX).
-func CancelThoughtEditor(c *gin.Context) {
+// AnnullaEditorPensiero svuota l'area dell'editor (risposta HTMX).
+func AnnullaEditorPensiero(c *gin.Context) {
 	c.Data(http.StatusOK, "text/html", []byte(""))
 }
 
-func PostThought(c *gin.Context) {
+func PostPensiero(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 	subjectID := c.PostForm("subject_id")
 	audienceID := c.PostForm("audience_id")
@@ -44,14 +44,14 @@ func PostThought(c *gin.Context) {
 		return
 	}
 
-	// upsert thought meta
-	var thoughtID string
+	// upsert pensiero meta
+	var pensieroID string
 	err := db.Pool.QueryRow(context.Background(), `
-		INSERT INTO thoughts (author_id, subject_id)
+		INSERT INTO pensieri (author_id, subject_id)
 		VALUES ($1, $2)
 		ON CONFLICT (author_id, subject_id) DO UPDATE SET updated_at = NOW()
 		RETURNING id
-	`, user.ID, subjectID).Scan(&thoughtID)
+	`, user.ID, subjectID).Scan(&pensieroID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "errore salvataggio")
 		return
@@ -63,10 +63,10 @@ func PostThought(c *gin.Context) {
 		audID = &audienceID
 	}
 	_, err = db.Pool.Exec(context.Background(), `
-		INSERT INTO thought_versions (thought_id, audience_id, content)
+		INSERT INTO versioni_pensiero (pensiero_id, audience_id, content)
 		VALUES ($1, $2, $3)
-		ON CONFLICT (thought_id, audience_id) DO UPDATE SET content = $3
-	`, thoughtID, audID, content)
+		ON CONFLICT (pensiero_id, audience_id) DO UPDATE SET content = $3
+	`, pensieroID, audID, content)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "errore salvataggio versione")
 		return
@@ -80,8 +80,8 @@ func PostThought(c *gin.Context) {
 	`))
 }
 
-func PostThoughtVersion(c *gin.Context) {
-	thoughtID := c.Param("id")
+func PostVersionePensiero(c *gin.Context) {
+	pensieroID := c.Param("id")
 	audienceID := c.PostForm("audience_id")
 	content := c.PostForm("content")
 
@@ -91,24 +91,24 @@ func PostThoughtVersion(c *gin.Context) {
 	}
 
 	db.Pool.Exec(context.Background(), `
-		INSERT INTO thought_versions (thought_id, audience_id, content)
+		INSERT INTO versioni_pensiero (pensiero_id, audience_id, content)
 		VALUES ($1, $2, $3)
-		ON CONFLICT (thought_id, audience_id) DO UPDATE SET content = $3
-	`, thoughtID, audID, content)
+		ON CONFLICT (pensiero_id, audience_id) DO UPDATE SET content = $3
+	`, pensieroID, audID, content)
 
 	c.Status(http.StatusNoContent)
 }
 
-func DeleteThoughtVersion(c *gin.Context) {
-	thoughtID := c.Param("id")
+func EliminaVersionePensiero(c *gin.Context) {
+	pensieroID := c.Param("id")
 	audienceID := c.Param("audienceID")
 
 	if audienceID == "default" {
 		db.Pool.Exec(context.Background(),
-			`DELETE FROM thought_versions WHERE thought_id = $1 AND audience_id IS NULL`, thoughtID)
+			`DELETE FROM versioni_pensiero WHERE pensiero_id = $1 AND audience_id IS NULL`, pensieroID)
 	} else {
 		db.Pool.Exec(context.Background(),
-			`DELETE FROM thought_versions WHERE thought_id = $1 AND audience_id = $2`, thoughtID, audienceID)
+			`DELETE FROM versioni_pensiero WHERE pensiero_id = $1 AND audience_id = $2`, pensieroID, audienceID)
 	}
 
 	c.Status(http.StatusNoContent)

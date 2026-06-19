@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>{{template "head" .}}<title>thoughts // @{{.Profile.Username}}</title></head>
+<head>{{template "head" .}}<title>pensieri // @{{.Profile.Username}}</title></head>
 <body>
 {{template "nav" .}}
 <div class="container" style="padding-top:1rem">
@@ -16,7 +16,7 @@
         <div class="profile-presence">
           <span class="presence-dot presence-{{if .Profile.Presence}}{{.Profile.Presence}}{{else}}online{{end}}"></span>
           <span>{{if .Profile.Presence}}{{.Profile.Presence}}{{else}}online{{end}}</span>
-          {{if .Profile.Status}}<span class="profile-status">“{{.Profile.Status}}”</span>{{end}}
+          {{if .Profile.Status}}<span class="profile-status">"{{.Profile.Status}}"</span>{{end}}
         </div>
         {{if .Profile.Bio}}
         <div class="profile-bio">{{.Profile.Bio}}</div>
@@ -94,18 +94,18 @@
     {{if .IsSelf}}
     <div style="margin-bottom:0.75rem">
       <button class="btn btn-sm"
-        hx-get="/thoughts/new"
-        hx-target="#thought-editor-area"
+        hx-get="/pensieri/nuovo"
+        hx-target="#pensiero-editor-area"
         hx-swap="innerHTML">
         [ + nuovo pensiero ]
       </button>
     </div>
-    <div id="thought-editor-area"></div>
+    <div id="pensiero-editor-area"></div>
     {{end}}
 
-    {{if .Thoughts}}
-      {{range .Thoughts}}
-        {{template "thought-card" .}}
+    {{if .Pensieri}}
+      {{range .Pensieri}}
+        {{template "pensiero-card" .}}
       {{end}}
     {{else}}
     <div class="empty">nessun pensiero ancora</div>

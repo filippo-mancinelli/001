@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type Thought struct {
+type Pensiero struct {
 	ID        string    `db:"id"`
 	AuthorID  string    `db:"author_id"`
 	SubjectID string    `db:"subject_id"`
@@ -10,17 +10,17 @@ type Thought struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-type ThoughtVersion struct {
+type VersionePensiero struct {
 	ID         string    `db:"id"`
-	ThoughtID  string    `db:"thought_id"`
+	PensieroID string    `db:"pensiero_id"`
 	AudienceID *string   `db:"audience_id"` // nil = default
 	Content    string    `db:"content"`
 	CreatedAt  time.Time `db:"created_at"`
 }
 
-// ResolvedThought è un pensiero già risolto per un viewer specifico
-type ResolvedThought struct {
-	ThoughtID   string
+// PensieroRisolto è un pensiero già risolto per un viewer specifico
+type PensieroRisolto struct {
+	PensieroID  string
 	AuthorID    string
 	AuthorName  string
 	SubjectID   string

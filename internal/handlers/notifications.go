@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"thoughts/internal/db"
-	"thoughts/internal/models"
+	"pensieri/internal/db"
+	"pensieri/internal/models"
 
 	"github.com/gin-gonic/gin"
 )

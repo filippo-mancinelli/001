@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>{{template "head" .}}<title>thoughts // feed</title></head>
+<head>{{template "head" .}}<title>pensieri // feed</title></head>
 <body>
 {{template "nav" .}}
 <div class="container" style="padding-top:1rem">
   <div class="panel">
     <div class="panel-title">// flusso recente</div>
-    {{if .Thoughts}}
-      {{range .Thoughts}}
-        {{template "thought-card" .}}
+    {{if .Pensieri}}
+      {{range .Pensieri}}
+        {{template "pensiero-card" .}}
       {{end}}
     {{else}}
     <div class="empty">

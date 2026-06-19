@@ -16,7 +16,7 @@ type Notification struct {
 
 type CuriousRequest struct {
 	ID          string    `db:"id"`
-	ThoughtID   string    `db:"thought_id"`
+	PensieroID  string    `db:"pensiero_id"`
 	RequesterID string    `db:"requester_id"`
 	Status      string    `db:"status"` // pending | accepted | rejected
 	CreatedAt   time.Time `db:"created_at"`

@@ -1,4 +1,4 @@
-module thoughts
+module pensieri
 
 go 1.26.1
 

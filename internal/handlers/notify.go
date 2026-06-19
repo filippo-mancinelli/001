@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"thoughts/internal/db"
-	"thoughts/internal/email"
+	"pensieri/internal/db"
+	"pensieri/internal/email"
 )
 
 // notify registra una notifica in-app per il destinatario e, in parallelo,

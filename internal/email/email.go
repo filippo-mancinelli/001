@@ -4,8 +4,8 @@
 //
 //	RESEND_API_KEY  chiave API Resend. Se assente, le email vengono
 //	                registrate sul log invece di essere inviate (modalità sviluppo).
-//	EMAIL_FROM      mittente, es. "thoughts <no-reply@tuodominio.it>".
-//	                Default: "thoughts <onboarding@resend.dev>".
+//	EMAIL_FROM      mittente, es. "pensieri <no-reply@tuodominio.it>".
+//	                Default: "pensieri <onboarding@resend.dev>".
 //	APP_URL         URL base usato nei link delle email. Default http://localhost:8080.
 package email
 
@@ -35,7 +35,7 @@ func from() string {
 	if v := os.Getenv("EMAIL_FROM"); v != "" {
 		return v
 	}
-	return "thoughts <onboarding@resend.dev>"
+	return "pensieri <onboarding@resend.dev>"
 }
 
 // AppURL restituisce l'URL base dell'app, senza slash finale.

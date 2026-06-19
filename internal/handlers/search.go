@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 	"strings"
-	"thoughts/internal/db"
-	"thoughts/internal/models"
+	"pensieri/internal/db"
+	"pensieri/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
