@@ -23,6 +23,26 @@ type notifAction struct {
 	Class string
 }
 
+func GetNotificationsCount(c *gin.Context) {
+	user := c.MustGet("user").(models.User)
+
+	var count int
+	db.Pool.QueryRow(context.Background(), `
+		SELECT COUNT(*) FROM notifications
+		WHERE user_id = $1 AND read = FALSE
+	`, user.ID).Scan(&count)
+
+	if count == 0 {
+		c.String(http.StatusOK, "")
+		return
+	}
+	label := fmt.Sprintf("%d", count)
+	if count > 99 {
+		label = "99+"
+	}
+	c.String(http.StatusOK, `<span class="notif-badge">`+label+`</span>`)
+}
+
 func GetNotifications(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 
