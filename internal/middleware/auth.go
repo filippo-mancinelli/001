@@ -3,8 +3,8 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"thoughts/internal/db"
-	"thoughts/internal/models"
+	"pensieri/internal/db"
+	"pensieri/internal/models"
 	"time"
 
 	"github.com/gin-gonic/gin"

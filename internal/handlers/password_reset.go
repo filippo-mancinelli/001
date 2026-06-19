@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"net/http"
 	"strings"
-	"thoughts/internal/db"
-	"thoughts/internal/email"
+	"pensieri/internal/db"
+	"pensieri/internal/email"
 	"time"
 
 	"github.com/gin-gonic/gin"

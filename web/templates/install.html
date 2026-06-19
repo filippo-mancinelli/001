@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>{{template "head" .}}<title>thoughts // installa</title></head>
+<head>{{template "head" .}}<title>pensieri // installa</title></head>
 <body>
 <div class="container" style="max-width:480px; padding-top:4rem">
   <div style="text-align:center; margin-bottom:2rem">
-    <img src="/static/icons/icon-192.png" alt="thoughts" width="84" height="84"
+    <img src="/static/icons/icon-192.png" alt="pensieri" width="84" height="84"
          style="border-radius:20px; box-shadow:var(--shadow); margin-bottom:0.75rem">
-    <div class="site-title" style="font-size:2.2rem">[ <span>thoughts</span> ]</div>
+    <div class="site-title" style="font-size:2.2rem">[ <span>pensieri</span> ]</div>
     <div class="auth-tagline">INSTALLA L'APP SUL TUO DISPOSITIVO</div>
   </div>
 
   <!-- stato: già installata -->
   <div class="panel" id="panel-installed" style="display:none">
     <div class="panel-title">// già installata</div>
-    <div class="alert alert-ok">stai già usando thoughts come app installata. nulla da fare!</div>
+    <div class="alert alert-ok">stai già usando pensieri come app installata. nulla da fare!</div>
     <a href="/" class="btn btn-cyan" style="width:100%; margin-top:0.5rem">[ vai al feed ]</a>
   </div>
 
@@ -22,9 +22,9 @@
     <div class="panel-title">// installazione rapida</div>
     <p style="font-size:0.85rem; color:var(--text-dim); margin-bottom:1rem">
       il tuo dispositivo supporta l'installazione diretta. tocca il pulsante qui sotto
-      e conferma per aggiungere thoughts alla schermata home.
+      e conferma per aggiungere pensieri alla schermata home.
     </p>
-    <button id="btn-install" class="btn" style="width:100%">[ installa thoughts ]</button>
+    <button id="btn-install" class="btn" style="width:100%">[ installa pensieri ]</button>
     <div id="android-hint" style="display:none; margin-top:1rem">
       <hr class="divider">
       <p style="font-size:0.8rem; color:var(--text-dim)">
@@ -75,7 +75,7 @@
       apri questa pagina con <strong>Chrome</strong>, <strong>Edge</strong> o un browser
       compatibile: troverai l'icona di installazione
       (<strong>⊕</strong>) nella barra degli indirizzi, oppure la voce
-      <strong>"Installa thoughts"</strong> nel menu del browser.
+      <strong>"Installa pensieri"</strong> nel menu del browser.
     </p>
     <p style="font-size:0.8rem; color:var(--text-dim); margin-top:0.75rem">
       per la migliore esperienza, installala sul tuo telefono:
@@ -84,7 +84,7 @@
   </div>
 
   <div style="text-align:center; font-size:0.78rem; margin-top:1.25rem">
-    <a href="/">torna a thoughts</a>
+    <a href="/">torna a pensieri</a>
   </div>
 </div>
 
@@ -170,7 +170,7 @@
           if (choice && choice.outcome === 'accepted') {
             document.getElementById('panel-android').innerHTML =
               '<div class="panel-title">// fatto</div>' +
-              '<div class="alert alert-ok">installazione avviata. trovi thoughts nella schermata home.</div>';
+              '<div class="alert alert-ok">installazione avviata. trovi pensieri nella schermata home.</div>';
           } else {
             document.getElementById('android-hint').style.display = '';
           }
@@ -182,7 +182,7 @@
       var p = document.getElementById('panel-android');
       if (p) p.innerHTML =
         '<div class="panel-title">// fatto</div>' +
-        '<div class="alert alert-ok">thoughts è stata installata. trovala nella schermata home.</div>';
+        '<div class="alert alert-ok">pensieri è stata installata. trovala nella schermata home.</div>';
     });
 
     // decidiamo il pannello iniziale dopo un attimo, dando tempo al

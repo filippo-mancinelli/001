@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"thoughts/internal/db"
-	mailer "thoughts/internal/email"
+	"pensieri/internal/db"
+	mailer "pensieri/internal/email"
 	"time"
 
 	"github.com/gin-gonic/gin"

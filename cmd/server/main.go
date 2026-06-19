@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"thoughts/internal/db"
-	"thoughts/internal/handlers"
-	"thoughts/internal/middleware"
+	"pensieri/internal/db"
+	"pensieri/internal/handlers"
+	"pensieri/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -89,12 +89,12 @@ func main() {
 		auth.GET("/notifications", handlers.GetNotifications)
 		auth.GET("/network", handlers.GetNetwork)
 
-		auth.POST("/thoughts", handlers.PostThought)
-		auth.GET("/thoughts/new", handlers.GetThoughtEditor)
-		auth.GET("/thoughts/cancel", handlers.CancelThoughtEditor)
-		auth.GET("/thoughts/:id/edit", handlers.GetThoughtEditor)
-		auth.POST("/thoughts/:id/versions", handlers.PostThoughtVersion)
-		auth.DELETE("/thoughts/:id/versions/:audienceID", handlers.DeleteThoughtVersion)
+		auth.POST("/pensieri", handlers.PostPensiero)
+		auth.GET("/pensieri/nuovo", handlers.GetEditorPensiero)
+		auth.GET("/pensieri/annulla", handlers.AnnullaEditorPensiero)
+		auth.GET("/pensieri/:id/modifica", handlers.GetEditorPensiero)
+		auth.POST("/pensieri/:id/versioni", handlers.PostVersionePensiero)
+		auth.DELETE("/pensieri/:id/versioni/:audienceID", handlers.EliminaVersionePensiero)
 
 		auth.POST("/curious/:id", handlers.PostCurious)
 		auth.POST("/curious/:id/accept", handlers.PostCuriousAccept)

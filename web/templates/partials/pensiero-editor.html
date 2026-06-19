@@ -1,7 +1,7 @@
-{{define "thought-editor"}}
+{{define "pensiero-editor"}}
 <div class="panel" style="margin-top:0.5rem">
   <div class="panel-title">// scrivi un pensiero</div>
-  <form hx-post="/thoughts" hx-target="#thought-editor-area" hx-swap="innerHTML">
+  <form hx-post="/pensieri" hx-target="#pensiero-editor-area" hx-swap="innerHTML">
     <div class="form-group">
       <label>su chi scrivi</label>
       <select name="subject_id">
@@ -26,8 +26,8 @@
     <div style="display:flex; gap:0.5rem">
       <button type="submit" class="btn">[ salva ]</button>
       <button type="button" class="btn btn-red btn-sm"
-        hx-get="/thoughts/cancel"
-        hx-target="#thought-editor-area"
+        hx-get="/pensieri/annulla"
+        hx-target="#pensiero-editor-area"
         hx-swap="innerHTML">annulla</button>
     </div>
   </form>

@@ -1,10 +1,10 @@
-// thoughts — service worker
+// pensieri — service worker
 // Strategia volutamente conservativa: l'app è server-rendered con sessioni via
 // cookie, quindi NON mettiamo in cache le pagine HTML autenticate (evita di
 // servire contenuti stantii o di un altro utente). Mettiamo in cache solo gli
 // asset statici e mostriamo una pagina di fallback quando si è offline.
 
-const CACHE = 'thoughts-v1';
+const CACHE = 'pensieri-v1';
 
 // asset "shell" precaricati all'installazione
 const PRECACHE = [

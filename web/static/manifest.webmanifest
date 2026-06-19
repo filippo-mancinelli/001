@@ -1,7 +1,7 @@
 {
-  "name": "thoughts // personal knowledge network",
-  "short_name": "thoughts",
-  "description": "thoughts — personal knowledge network. Condividi pensieri e costruisci la tua rete.",
+  "name": "pensieri // personal knowledge network",
+  "short_name": "pensieri",
+  "description": "pensieri — personal knowledge network. Condividi pensieri e costruisci la tua rete.",
   "lang": "it",
   "id": "/",
   "start_url": "/?source=pwa",
@@ -35,7 +35,7 @@
     {
       "name": "Nuovo pensiero",
       "short_name": "Scrivi",
-      "url": "/thoughts/new",
+      "url": "/pensieri/nuovo",
       "description": "Scrivi un nuovo pensiero"
     },
     {

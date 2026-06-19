@@ -19,14 +19,14 @@ func layout(heading, intro, ctaLabel, ctaURL, footer string) string {
 		</td></tr>`, template.HTMLEscapeString(ctaURL), template.HTMLEscapeString(ctaLabel))
 	}
 	if footer == "" {
-		footer = "Hai ricevuto questa email perché sei iscritto a thoughts."
+		footer = "Hai ricevuto questa email perché sei iscritto a pensieri."
 	}
 	return fmt.Sprintf(`<!DOCTYPE html>
 <html lang="it"><body style="margin:0;background:#c3d6ec;font-family:'Segoe UI',Tahoma,Arial,sans-serif;color:#2b3038">
 <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="padding:32px 12px">
 <tr><td align="center">
   <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border:1px solid #9fb6cf;border-radius:9px;overflow:hidden">
-    <tr><td style="background:linear-gradient(180deg,#5f99da,#2f6cae);padding:14px 24px;color:#fff;font-weight:700;font-size:15px;letter-spacing:0.04em">[ thoughts ]</td></tr>
+    <tr><td style="background:linear-gradient(180deg,#5f99da,#2f6cae);padding:14px 24px;color:#fff;font-weight:700;font-size:15px;letter-spacing:0.04em">[ pensieri ]</td></tr>
     <tr><td style="padding:24px">
       <table role="presentation" width="100%%" cellpadding="0" cellspacing="0">
         <tr><td style="font-size:18px;font-weight:700;padding-bottom:10px">%s</td></tr>
@@ -42,7 +42,7 @@ func layout(heading, intro, ctaLabel, ctaURL, footer string) string {
 
 // Welcome compone l'email di benvenuto. Ritorna oggetto e corpo HTML.
 func Welcome(username string) (subject, html string) {
-	subject = "Benvenuto su thoughts"
+	subject = "Benvenuto su pensieri"
 	body := fmt.Sprintf("Ciao <strong>@%s</strong>,<br><br>il tuo nodo nella rete è attivo. "+
 		"Inizia a seguire persone e a scrivere i tuoi pensieri.", template.HTMLEscapeString(username))
 	html = layout("Benvenuto nella rete", body, "Vai al feed", AppURL()+"/", "")

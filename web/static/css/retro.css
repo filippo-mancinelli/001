@@ -261,8 +261,8 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 .alert-ok { border-color: #aedab4; background: linear-gradient(#eef9f0,#e0f3e4); color: #2e7d32; }
 .alert-ok::before { content: '✓ '; }
 
-/* ===== THOUGHT CARD ===== */
-.thought-card {
+/* ===== PENSIERO CARD ===== */
+.pensiero-card {
   border: 1px solid #cdd9e7;
   border-left: 5px solid var(--blue-light);
   border-radius: 7px;
@@ -273,18 +273,18 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
   animation: cardin 0.2s var(--ease);
 }
 @keyframes cardin { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
-.thought-card:hover { border-left-color: var(--blue); box-shadow: 0 3px 10px rgba(30,50,80,0.15); }
+.pensiero-card:hover { border-left-color: var(--blue); box-shadow: 0 3px 10px rgba(30,50,80,0.15); }
 
-.thought-meta {
+.pensiero-meta {
   font-size: 0.72rem; color: var(--text-dim);
   margin-bottom: 0.5rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;
 }
-.thought-meta .author { color: var(--cyan); font-weight: 700; }
-.thought-meta .subject { color: var(--amber); font-weight: 700; }
+.pensiero-meta .author { color: var(--cyan); font-weight: 700; }
+.pensiero-meta .subject { color: var(--amber); font-weight: 700; }
 
-.thought-content { line-height: 1.6; white-space: pre-wrap; word-break: break-word; font-size: 0.92rem; color: #333a43; }
+.pensiero-contenuto { line-height: 1.6; white-space: pre-wrap; word-break: break-word; font-size: 0.92rem; color: #333a43; }
 
-.thought-actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; align-items: center; }
+.pensiero-azioni { margin-top: 0.75rem; display: flex; gap: 0.5rem; align-items: center; }
 
 .badge-direct {
   font-size: 0.64rem; color: #1f7a2c; font-weight: 700;

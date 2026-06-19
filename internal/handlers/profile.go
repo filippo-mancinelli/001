@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"thoughts/internal/db"
-	"thoughts/internal/models"
+	"pensieri/internal/db"
+	"pensieri/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,8 +15,8 @@ func GetFeed(c *gin.Context) {
 	rows, err := db.Pool.Query(context.Background(), `
 		SELECT DISTINCT ON (t.id)
 			t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
-			`+thoughtResolveCols("$1")+`
-		FROM thoughts t
+			`+colonneRisolte("$1")+`
+		FROM pensieri t
 		JOIN follows f ON f.following_id = t.author_id AND f.follower_id = $1
 		JOIN users u_a ON u_a.id = t.author_id
 		JOIN users u_s ON u_s.id = t.subject_id
@@ -28,17 +28,17 @@ func GetFeed(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var thoughts []models.ResolvedThought
+	var pensieri []models.PensieroRisolto
 	for rows.Next() {
-		var rt models.ResolvedThought
-		rows.Scan(&rt.ThoughtID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
+		var rt models.PensieroRisolto
+		rows.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
 			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending)
 		if rt.Content != "" {
-			thoughts = append(thoughts, rt)
+			pensieri = append(pensieri, rt)
 		}
 	}
 
-	c.HTML(http.StatusOK, "feed.html", gin.H{"User": user, "Thoughts": thoughts})
+	c.HTML(http.StatusOK, "feed.html", gin.H{"User": user, "Pensieri": pensieri})
 }
 
 func GetProfile(c *gin.Context) {
@@ -75,32 +75,32 @@ func GetProfile(c *gin.Context) {
 
 	// pensieri scritti dal profilo, risolti per il viewer corrente.
 	// l'autore vede sempre tutto ciò che ha scritto (versione diretta inclusa).
-	thoughtRows, _ := db.Pool.Query(context.Background(), `
+	righe, _ := db.Pool.Query(context.Background(), `
 		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
 			CASE WHEN t.author_id = $2 THEN
 				COALESCE(
-					(SELECT content FROM thought_versions WHERE thought_id = t.id AND audience_id = t.subject_id),
-					(SELECT content FROM thought_versions WHERE thought_id = t.id AND audience_id IS NULL)
+					(SELECT content FROM versioni_pensiero WHERE pensiero_id = t.id AND audience_id = t.subject_id),
+					(SELECT content FROM versioni_pensiero WHERE pensiero_id = t.id AND audience_id IS NULL)
 				)
-			ELSE `+thoughtResolveContent("$2")+` END AS content,
-			(t.author_id = $2 OR `+thoughtIsDirect("$2")+`) AS is_direct,
-			(t.author_id <> $2 AND `+thoughtCanSendCurious("$2")+`) AS can_send_curious,
-			`+thoughtCuriousPending("$2")+` AS curious_pending
-		FROM thoughts t
+			ELSE `+resolviContenuto("$2")+` END AS content,
+			(t.author_id = $2 OR `+isDiretta("$2")+`) AS is_direct,
+			(t.author_id <> $2 AND `+puoCurioso("$2")+`) AS can_send_curious,
+			`+curiosoInAttesa("$2")+` AS curious_pending
+		FROM pensieri t
 		JOIN users u_a ON u_a.id = t.author_id
 		JOIN users u_s ON u_s.id = t.subject_id
 		WHERE t.author_id = $1
 		ORDER BY t.updated_at DESC
 	`, profile.ID, user.ID)
-	defer thoughtRows.Close()
+	defer righe.Close()
 
-	var thoughts []models.ResolvedThought
-	for thoughtRows.Next() {
-		var rt models.ResolvedThought
-		thoughtRows.Scan(&rt.ThoughtID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
+	var pensieri []models.PensieroRisolto
+	for righe.Next() {
+		var rt models.PensieroRisolto
+		righe.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
 			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending)
 		if rt.Content != "" {
-			thoughts = append(thoughts, rt)
+			pensieri = append(pensieri, rt)
 		}
 	}
 
@@ -113,7 +113,7 @@ func GetProfile(c *gin.Context) {
 		"Followers":      followers,
 		"FollowingCount": len(following),
 		"FollowersCount": len(followers),
-		"Thoughts":       thoughts,
+		"Pensieri":       pensieri,
 	})
 }
 

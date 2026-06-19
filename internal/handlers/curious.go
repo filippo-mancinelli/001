@@ -3,20 +3,20 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"thoughts/internal/db"
-	"thoughts/internal/models"
+	"pensieri/internal/db"
+	"pensieri/internal/models"
 
 	"github.com/gin-gonic/gin"
 )
 
 func PostCurious(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
-	thoughtID := c.Param("id")
+	pensieroID := c.Param("id")
 
-	// recupera il subject del thought per inviargli la notifica
+	// recupera il subject del pensiero per inviargli la notifica
 	var subjectID, authorID string
 	err := db.Pool.QueryRow(context.Background(),
-		`SELECT subject_id, author_id FROM thoughts WHERE id = $1`, thoughtID,
+		`SELECT subject_id, author_id FROM pensieri WHERE id = $1`, pensieroID,
 	).Scan(&subjectID, &authorID)
 	if err != nil {
 		c.String(http.StatusNotFound, "pensiero non trovato")
@@ -24,10 +24,10 @@ func PostCurious(c *gin.Context) {
 	}
 
 	_, err = db.Pool.Exec(context.Background(), `
-		INSERT INTO curious_requests (thought_id, requester_id)
+		INSERT INTO curious_requests (pensiero_id, requester_id)
 		VALUES ($1, $2)
 		ON CONFLICT DO NOTHING
-	`, thoughtID, user.ID)
+	`, pensieroID, user.ID)
 	if err != nil {
 		c.String(http.StatusInternalServerError, "errore")
 		return
@@ -36,21 +36,21 @@ func PostCurious(c *gin.Context) {
 	// recupera ID della curious_request appena creata
 	var reqID string
 	db.Pool.QueryRow(context.Background(),
-		`SELECT id FROM curious_requests WHERE thought_id=$1 AND requester_id=$2`,
-		thoughtID, user.ID,
+		`SELECT id FROM curious_requests WHERE pensiero_id=$1 AND requester_id=$2`,
+		pensieroID, user.ID,
 	).Scan(&reqID)
 
 	// notifica al subject
 	notify(subjectID, "curious_request", map[string]string{
 		"requester_id":   user.ID,
 		"requester_name": user.Username,
-		"thought_id":     thoughtID,
+		"pensiero_id":    pensieroID,
 		"request_id":     reqID,
 	})
 
 	// risposta HTMX: mostra stato pending
 	c.Data(http.StatusOK, "text/html", []byte(`
-		<div class="thought-actions">
+		<div class="pensiero-azioni">
 			<span style="color:var(--amber); font-size:0.75rem">richiesta inviata — in attesa...</span>
 		</div>
 	`))
@@ -60,13 +60,13 @@ func PostCuriousAccept(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 	reqID := c.Param("id")
 
-	var requesterID, thoughtID string
+	var requesterID, pensieroID string
 	err := db.Pool.QueryRow(context.Background(), `
-		SELECT cr.requester_id, cr.thought_id
+		SELECT cr.requester_id, cr.pensiero_id
 		FROM curious_requests cr
-		JOIN thoughts t ON t.id = cr.thought_id
+		JOIN pensieri t ON t.id = cr.pensiero_id
 		WHERE cr.id = $1 AND t.subject_id = $2
-	`, reqID, user.ID).Scan(&requesterID, &thoughtID)
+	`, reqID, user.ID).Scan(&requesterID, &pensieroID)
 	if err != nil {
 		c.String(http.StatusForbidden, "non autorizzato")
 		return
@@ -77,7 +77,7 @@ func PostCuriousAccept(c *gin.Context) {
 
 	// notifica al requester
 	notify(requesterID, "curious_accepted", map[string]string{
-		"thought_id":  thoughtID,
+		"pensiero_id": pensieroID,
 		"accepted_by": user.Username,
 	})
 
@@ -96,7 +96,7 @@ func PostCuriousReject(c *gin.Context) {
 	db.Pool.QueryRow(context.Background(), `
 		SELECT EXISTS(
 			SELECT 1 FROM curious_requests cr
-			JOIN thoughts t ON t.id = cr.thought_id
+			JOIN pensieri t ON t.id = cr.pensiero_id
 			WHERE cr.id = $1 AND t.subject_id = $2
 		)
 	`, reqID, user.ID).Scan(&exists)

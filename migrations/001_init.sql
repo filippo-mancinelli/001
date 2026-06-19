@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS follows (
     PRIMARY KEY (follower_id, following_id)
 );
 
-CREATE TABLE IF NOT EXISTS thoughts (
+CREATE TABLE IF NOT EXISTS pensieri (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     author_id  UUID REFERENCES users(id) ON DELETE CASCADE,
     subject_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -33,22 +33,22 @@ CREATE TABLE IF NOT EXISTS thoughts (
 );
 
 -- audience_id NULL = versione default per "tutti gli altri"
-CREATE TABLE IF NOT EXISTS thought_versions (
+CREATE TABLE IF NOT EXISTS versioni_pensiero (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    thought_id  UUID REFERENCES thoughts(id) ON DELETE CASCADE,
+    pensiero_id UUID REFERENCES pensieri(id) ON DELETE CASCADE,
     audience_id UUID REFERENCES users(id) ON DELETE CASCADE,
     content     TEXT NOT NULL,
     created_at  TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE (thought_id, audience_id)
+    UNIQUE (pensiero_id, audience_id)
 );
 
 CREATE TABLE IF NOT EXISTS curious_requests (
     id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    thought_id   UUID REFERENCES thoughts(id) ON DELETE CASCADE,
+    pensiero_id  UUID REFERENCES pensieri(id) ON DELETE CASCADE,
     requester_id UUID REFERENCES users(id) ON DELETE CASCADE,
     status       VARCHAR(16) DEFAULT 'pending',
     created_at   TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE (thought_id, requester_id)
+    UNIQUE (pensiero_id, requester_id)
 );
 
 CREATE TABLE IF NOT EXISTS notifications (
