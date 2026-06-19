@@ -26,7 +26,7 @@
 {{template "nav" .}}
 <div class="container" style="padding-top:1rem">
   <div class="panel" style="padding:0; overflow:hidden">
-    <div class="panel-title">// mappa della rete — grafo connessioni</div>
+    <div class="panel-title" style="margin:0">// mappa della rete — grafo connessioni</div>
     <div class="graph-wrap">
       <canvas id="netCanvas"></canvas>
     </div>
@@ -141,7 +141,7 @@
   }
 
   /* pan / drag */
-  let pan = {x:0, y:0}, dragged = null, panning = false, lastM = null, hovN = null;
+  let pan = {x:0, y:0}, dragged = null, panning = false, lastM = null, downM = null, hovN = null;
 
   function toWorld(cx, cy) { return {x: cx-pan.x, y: cy-pan.y}; }
 
@@ -159,6 +159,7 @@
     if (hit) { dragged = hit; simOn = true; ticks = 0; }
     else panning = true;
     lastM = {x:mx, y:my};
+    downM = {x:mx, y:my};
   }
   function onMove(mx, my) {
     if (dragged) {
@@ -173,9 +174,9 @@
     lastM = {x:mx, y:my};
   }
   function onUp(mx, my) {
-    if (dragged && lastM && Math.abs(mx-lastM.x)<5 && Math.abs(my-lastM.y)<5)
+    if (dragged && downM && Math.abs(mx-downM.x)<5 && Math.abs(my-downM.y)<5)
       window.location.href = '/@' + dragged.username;
-    dragged = null; panning = false;
+    dragged = null; panning = false; downM = null;
   }
 
   canvas.addEventListener('mousedown', e => { const r=canvas.getBoundingClientRect(); onDown(e.clientX-r.left,e.clientY-r.top); });

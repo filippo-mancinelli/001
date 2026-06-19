@@ -34,15 +34,21 @@
     });
   }
 
-  // mostra il link "installa" solo se l'app non è già installata
+  // mostra il link "installa" solo se l'app non è già installata come PWA
   (function () {
-    var standalone = window.matchMedia('(display-mode: standalone)').matches ||
-                     navigator.standalone === true;
-    if (standalone) return;
-    document.addEventListener('DOMContentLoaded', function () {
+    function isPWA() {
+      return window.matchMedia('(display-mode: standalone)').matches ||
+             window.matchMedia('(display-mode: minimal-ui)').matches ||
+             navigator.standalone === true;
+    }
+    function syncInstallBtn() {
       var links = document.querySelectorAll('[data-pwa-install]');
-      for (var i = 0; i < links.length; i++) links[i].hidden = false;
-    });
+      var hide = isPWA();
+      for (var i = 0; i < links.length; i++) links[i].hidden = hide;
+    }
+    if (isPWA()) return;
+    document.addEventListener('DOMContentLoaded', syncInstallBtn);
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', syncInstallBtn);
   })();
 
   // evidenzia la voce di navigazione corrispondente alla pagina attiva
