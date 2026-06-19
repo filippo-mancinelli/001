@@ -1,0 +1,28 @@
+# Keep the build context tiny: only ship what `go build` and the runtime need.
+.git
+.gitignore
+.github
+.env
+.env.*
+!.env.example
+
+# Local tooling / editor noise
+.omc
+.CLAUDE
+.kilo
+.idea
+.vscode
+*.swp
+*.swo
+
+# Build artifacts
+pensieri
+*.exe
+*.test
+*.out
+vendor/
+
+# Docs / OS junk
+README.md
+.DS_Store
+Thumbs.db
