@@ -84,6 +84,7 @@ func main() {
 		auth.POST("/settings/account", handlers.PostAccountSettings)
 		auth.POST("/settings/password", handlers.PostPasswordSettings)
 		auth.GET("/search", handlers.GetSearch)
+		auth.GET("/search/results", handlers.GetSearchResults)
 		auth.POST("/follow/:username", handlers.PostFollow)
 		auth.DELETE("/follow/:username", handlers.DeleteFollow)
 		auth.GET("/notifications", handlers.GetNotifications)
