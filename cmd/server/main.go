@@ -112,20 +112,45 @@ func main() {
 }
 
 func runMigrations() error {
+	ctx := context.Background()
+	if _, err := db.Pool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS schema_migrations (
+			filename   TEXT PRIMARY KEY,
+			applied_at TIMESTAMPTZ DEFAULT NOW()
+		)
+	`); err != nil {
+		return fmt.Errorf("schema_migrations: %w", err)
+	}
+
 	files, err := filepath.Glob("migrations/*.sql")
 	if err != nil {
 		return err
 	}
 	sort.Strings(files)
 	for _, f := range files {
+		base := filepath.Base(f)
+		var applied bool
+		if err := db.Pool.QueryRow(ctx,
+			`SELECT EXISTS(SELECT 1 FROM schema_migrations WHERE filename = $1)`, base,
+		).Scan(&applied); err != nil {
+			return fmt.Errorf("check %s: %w", base, err)
+		}
+		if applied {
+			continue
+		}
 		sql, err := os.ReadFile(f)
 		if err != nil {
 			return err
 		}
-		if _, err := db.Pool.Exec(context.Background(), string(sql)); err != nil {
+		if _, err := db.Pool.Exec(ctx, string(sql)); err != nil {
 			return fmt.Errorf("%s: %w", f, err)
 		}
-		log.Printf("migration applied: %s", filepath.Base(f))
+		if _, err := db.Pool.Exec(ctx,
+			`INSERT INTO schema_migrations (filename) VALUES ($1)`, base,
+		); err != nil {
+			return fmt.Errorf("record %s: %w", base, err)
+		}
+		log.Printf("migration applied: %s", base)
 	}
 	return nil
 }
