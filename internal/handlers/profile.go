@@ -38,7 +38,36 @@ func GetFeed(c *gin.Context) {
 		}
 	}
 
-	c.HTML(http.StatusOK, "feed.html", gin.H{"User": user, "Pensieri": pensieri})
+	// pensieri pubblici recenti da utenti non seguiti (sezione scoperta)
+	var pubblici []models.PensieroRisolto
+	rows2, err2 := db.Pool.Query(context.Background(), `
+		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
+			`+colonneRisolte("$1")+`
+		FROM pensieri t
+		JOIN users u_a ON u_a.id = t.author_id
+		JOIN users u_s ON u_s.id = t.subject_id
+		WHERE t.author_id <> $1
+		  AND NOT EXISTS (SELECT 1 FROM follows WHERE follower_id = $1 AND following_id = t.author_id)
+		  AND EXISTS (
+		    SELECT 1 FROM versioni_pensiero vp
+		    WHERE vp.pensiero_id = t.id AND vp.audience_id IS NULL
+		  )
+		ORDER BY t.updated_at DESC
+		LIMIT 30
+	`, user.ID)
+	if err2 == nil {
+		defer rows2.Close()
+		for rows2.Next() {
+			var rt models.PensieroRisolto
+			rows2.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
+				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending)
+			if rt.Content != "" {
+				pubblici = append(pubblici, rt)
+			}
+		}
+	}
+
+	c.HTML(http.StatusOK, "feed.html", gin.H{"User": user, "Pensieri": pensieri, "Pubblici": pubblici})
 }
 
 func GetProfile(c *gin.Context) {
