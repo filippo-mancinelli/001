@@ -6,28 +6,21 @@
 <div class="container" style="padding-top:1rem">
   <div class="panel">
     <div class="panel-title">// trova utenti</div>
-    <form method="GET" action="/search" style="display:flex; gap:0.5rem">
-      <input type="text" name="q" value="{{.Query}}" placeholder="cerca per username..." autofocus>
-      <button class="btn btn-cyan">cerca</button>
-    </form>
+    <input
+      type="text"
+      name="q"
+      value="{{.Query}}"
+      placeholder="cerca per username..."
+      autofocus
+      hx-get="/search/results"
+      hx-trigger="keyup changed delay:300ms"
+      hx-target="#search-results"
+      style="width:100%"
+    >
   </div>
 
-  <div class="panel">
-    <div class="panel-title">// risultati{{if .Query}} per "{{.Query}}"{{end}}</div>
-    {{if .Results}}
-      {{range .Results}}
-      <div class="user-row">
-        <span class="avatar-sm">{{template "avatar" .}}</span>
-        <a href="/@{{.Username}}" class="username">{{.Username}}</a>
-        {{if .DisplayName}}<span class="user-row-name">{{.DisplayName}}</span>{{end}}
-        {{if .Bio}}<span style="color:var(--text-dim); font-size:0.8rem">— {{.Bio}}</span>{{end}}
-      </div>
-      {{end}}
-    {{else}}
-    <div class="empty">
-      {{if .Query}}nessun utente trovato.{{else}}inserisci un username per cercare.{{end}}
-    </div>
-    {{end}}
+  <div class="panel" id="search-results">
+    {{template "search-results" .}}
   </div>
 </div>
 {{template "statusbar" .}}
