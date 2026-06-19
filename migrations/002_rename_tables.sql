@@ -4,6 +4,10 @@
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'thoughts') THEN
+    -- 001_init.sql uses IF NOT EXISTS with new names, so on an existing DB it may have
+    -- already created empty pensieri/versioni_pensiero; drop them before renaming.
+    DROP TABLE IF EXISTS versioni_pensiero;
+    DROP TABLE IF EXISTS pensieri;
     ALTER TABLE thoughts RENAME TO pensieri;
   END IF;
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'thought_versions') THEN
