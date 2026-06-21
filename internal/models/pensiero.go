@@ -31,4 +31,21 @@ type PensieroRisolto struct {
 	// stato richiesta "sono curioso" relativo al viewer corrente
 	CanSendCurious bool // il viewer può chiedere di vedere la versione diretta
 	CuriousPending bool // il viewer ha una richiesta in attesa
+
+	CommentCount int // numero di commenti collegati al pensiero
+}
+
+// Commento è un commento di un utente su un pensiero, già risolto per la vista
+// (include il nome dell'autore e se il viewer corrente può eliminarlo).
+type Commento struct {
+	ID         string    `db:"id"`
+	PensieroID string    `db:"pensiero_id"`
+	AuthorID   string    `db:"author_id"`
+	AuthorName string    // username dell'autore del commento
+	Content    string    `db:"content"`
+	CreatedAt  time.Time `db:"created_at"`
+
+	// CanDelete è true se il viewer può eliminare il commento: ne è l'autore
+	// oppure è l'autore del pensiero (modera i commenti sotto il proprio pensiero).
+	CanDelete bool
 }

@@ -77,6 +77,8 @@ func GetNotifications(c *gin.Context) {
 			}
 		case "curious_accepted":
 			nv.Message = fmt.Sprintf("@%s ha accettato — puoi ora vedere il pensiero diretto", p["accepted_by"])
+		case "new_comment":
+			nv.Message = fmt.Sprintf("@%s ha commentato un tuo pensiero", p["commenter_name"])
 		case "new_follower":
 			nv.Message = fmt.Sprintf("@%s ha iniziato a seguirti", p["follower_name"])
 		default:

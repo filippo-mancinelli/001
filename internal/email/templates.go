@@ -83,6 +83,12 @@ func Notification(ntype string, recipient string, data map[string]string) (subje
 		body := fmt.Sprintf("<strong>@%s</strong> ha accettato: ora puoi vedere il pensiero diretto.",
 			template.HTMLEscapeString(who))
 		html = layout("Richiesta accettata", body, "Apri le notifiche", AppURL()+"/notifications", "")
+	case "new_comment":
+		who := data["commenter_name"]
+		subject = fmt.Sprintf("@%s ha commentato un tuo pensiero", who)
+		body := fmt.Sprintf("<strong>@%s</strong> ha lasciato un commento sotto un tuo pensiero.",
+			template.HTMLEscapeString(who))
+		html = layout("Nuovo commento", body, "Apri il profilo", AppURL()+"/@"+sanitizeHandle(who), "")
 	}
 	return
 }
