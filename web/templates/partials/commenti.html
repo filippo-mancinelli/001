@@ -1,5 +1,11 @@
 {{define "commenti-thread"}}
 <div class="commenti-thread">
+  <div class="commenti-header">
+    <button class="commenti-chiudi"
+      hx-get="/pensieri/{{.PensieroID}}/commenti/chiudi"
+      hx-target="#commenti-{{.PensieroID}}"
+      hx-swap="innerHTML">[ − chiudi ]</button>
+  </div>
   {{if .Commenti}}
   <div class="commenti-lista">
     {{range .Commenti}}
@@ -13,7 +19,16 @@
       </span>
       <div class="commento-body">
         <div class="commento-head">
-          <a class="commento-autore" href="/@{{.AuthorName}}">@{{.AuthorName}}</a>
+          <span class="user-tooltip-wrap">
+            <details class="user-tooltip">
+              <summary class="commento-autore">@{{.AuthorName}}</summary>
+              <div class="user-tooltip-card"
+                   hx-get="/users/{{.AuthorName}}/mini"
+                   hx-trigger="toggle from:closest details once"
+                   hx-target="this"
+                   hx-swap="innerHTML"></div>
+            </details>
+          </span>
           <span class="commento-data">{{.CreatedAt.Format "02/01 15:04"}}</span>
           {{if .CanDelete}}
           <button class="commento-del" title="elimina commento"
@@ -25,6 +40,14 @@
         </div>
         <div class="commento-testo">{{.Content}}</div>
       </div>
+    </div>
+    {{end}}
+    {{if .HasMore}}
+    <div id="commenti-piu-{{.PensieroID}}" class="commenti-piu-wrap">
+      <button class="commenti-piu-btn"
+        hx-get="/pensieri/{{.PensieroID}}/commenti?offset={{.NextOffset}}"
+        hx-target="#commenti-piu-{{.PensieroID}}"
+        hx-swap="outerHTML">[ carica altri ]</button>
     </div>
     {{end}}
   </div>
@@ -40,4 +63,59 @@
     <button class="btn btn-cyan btn-sm" type="submit">[ invia ]</button>
   </form>
 </div>
+{{end}}
+
+{{define "commenti-piu"}}
+{{range .Commenti}}
+<div class="commento" id="commento-{{.ID}}">
+  <span class="commento-av">
+    {{if .AuthorAvatar}}
+    <img class="avatar" src="{{.AuthorAvatar}}" alt="@{{.AuthorName}}" loading="lazy">
+    {{else}}
+    <span class="avatar avatar-fallback" style="background:{{avatarColor .AuthorName}}">{{initial .AuthorName}}</span>
+    {{end}}
+  </span>
+  <div class="commento-body">
+    <div class="commento-head">
+      <span class="user-tooltip-wrap">
+        <details class="user-tooltip">
+          <summary class="commento-autore">@{{.AuthorName}}</summary>
+          <div class="user-tooltip-card"
+               hx-get="/users/{{.AuthorName}}/mini"
+               hx-trigger="toggle from:closest details once"
+               hx-target="this"
+               hx-swap="innerHTML"></div>
+        </details>
+      </span>
+      <span class="commento-data">{{.CreatedAt.Format "02/01 15:04"}}</span>
+      {{if .CanDelete}}
+      <button class="commento-del" title="elimina commento"
+        hx-delete="/commenti/{{.ID}}"
+        hx-target="#commenti-{{.PensieroID}}"
+        hx-swap="innerHTML"
+        hx-confirm="Eliminare questo commento?">×</button>
+      {{end}}
+    </div>
+    <div class="commento-testo">{{.Content}}</div>
+  </div>
+</div>
+{{end}}
+{{if .HasMore}}
+<div id="commenti-piu-{{.PensieroID}}" class="commenti-piu-wrap">
+  <button class="commenti-piu-btn"
+    hx-get="/pensieri/{{.PensieroID}}/commenti?offset={{.NextOffset}}"
+    hx-target="#commenti-piu-{{.PensieroID}}"
+    hx-swap="outerHTML">[ carica altri ]</button>
+</div>
+{{end}}
+{{end}}
+
+{{define "commenti-chiudi"}}
+<button class="commenti-toggle"
+  hx-get="/pensieri/{{.PensieroID}}/commenti"
+  hx-target="#commenti-{{.PensieroID}}"
+  hx-swap="innerHTML">
+  <svg class="commenti-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-4 4v-4H4z"/></svg>
+  <span>[ commenti{{if .CommentCount}} ({{.CommentCount}}){{end}} ]</span>
+</button>
 {{end}}
