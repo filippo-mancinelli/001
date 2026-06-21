@@ -299,23 +299,42 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 .pensiero-commenti { margin-top: 0.7rem; padding-top: 0.55rem; border-top: 1px dashed var(--border-soft); }
 
 .commenti-toggle {
+  display: inline-flex; align-items: center; gap: 0.35rem;
   background: none; border: none; cursor: pointer;
   font-family: inherit; font-size: 0.72rem; font-weight: 700;
   color: var(--blue-dark); letter-spacing: 0.02em; padding: 0.15rem 0;
 }
-.commenti-toggle:hover { color: var(--blue); text-decoration: underline; }
+.commenti-toggle:hover { color: var(--blue); }
+.commenti-toggle:hover span { text-decoration: underline; }
+.commenti-ico { width: 14px; height: 14px; flex: 0 0 auto; }
 
 .commenti-thread { animation: cardin 0.18s var(--ease); }
 
-.commenti-lista { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 0.6rem; }
+/* lista in stile guestbook/forum: cornice, righe a zebra e separatori tratteggiati */
+.commenti-lista {
+  margin-bottom: 0.6rem; background: var(--bg-panel);
+  border: 1px solid var(--border-soft); border-radius: 6px; overflow: hidden;
+  box-shadow: inset 0 1px 0 #fff;
+}
 
 .commento {
-  background: #f4f8fd; border: 1px solid var(--border-soft);
-  border-radius: 6px; padding: 0.45rem 0.6rem;
+  display: flex; gap: 0.55rem; align-items: flex-start;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px dashed #c8d6e8;
 }
+.commento:last-child { border-bottom: none; }
+.commento:nth-child(even) { background: #eef4fb; } /* zebra striping */
+
+.commento-av { flex: 0 0 auto; }
+.commento-av .avatar {
+  width: 28px; height: 28px; font-size: 0.74rem;
+  border-radius: 5px; /* avatar squadrato retrò, non tondo */
+}
+
+.commento-body { flex: 1; min-width: 0; }
 .commento-head {
   display: flex; align-items: center; gap: 0.5rem;
-  font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.2rem;
+  font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.15rem;
 }
 .commento-autore { color: var(--cyan); font-weight: 700; }
 .commento-data { color: var(--text-dim); }
@@ -329,7 +348,11 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
   white-space: pre-wrap; word-break: break-word;
 }
 
-.commenti-vuoto { font-size: 0.76rem; color: var(--text-dim); margin-bottom: 0.6rem; }
+.commenti-vuoto {
+  font-size: 0.76rem; color: var(--text-dim); margin-bottom: 0.6rem;
+  padding: 0.5rem 0.6rem; background: var(--bg-panel);
+  border: 1px dashed var(--border-soft); border-radius: 6px; text-align: center;
+}
 
 .commento-form { display: flex; gap: 0.5rem; align-items: flex-start; }
 .commento-form textarea {

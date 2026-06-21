@@ -1,9 +1,17 @@
 {{define "commenti-thread"}}
 <div class="commenti-thread">
+  {{if .Commenti}}
   <div class="commenti-lista">
-    {{if .Commenti}}
-      {{range .Commenti}}
-      <div class="commento" id="commento-{{.ID}}">
+    {{range .Commenti}}
+    <div class="commento" id="commento-{{.ID}}">
+      <span class="commento-av">
+        {{if .AuthorAvatar}}
+        <img class="avatar" src="{{.AuthorAvatar}}" alt="@{{.AuthorName}}" loading="lazy">
+        {{else}}
+        <span class="avatar avatar-fallback" style="background:{{avatarColor .AuthorName}}">{{initial .AuthorName}}</span>
+        {{end}}
+      </span>
+      <div class="commento-body">
         <div class="commento-head">
           <a class="commento-autore" href="/@{{.AuthorName}}">@{{.AuthorName}}</a>
           <span class="commento-data">{{.CreatedAt.Format "02/01 15:04"}}</span>
@@ -17,11 +25,12 @@
         </div>
         <div class="commento-testo">{{.Content}}</div>
       </div>
-      {{end}}
-    {{else}}
-      <div class="commenti-vuoto">nessun commento — scrivi il primo.</div>
+    </div>
     {{end}}
   </div>
+  {{else}}
+  <div class="commenti-vuoto">nessun commento — scrivi il primo.</div>
+  {{end}}
   <form class="commento-form"
         hx-post="/pensieri/{{.PensieroID}}/commenti"
         hx-target="#commenti-{{.PensieroID}}"
