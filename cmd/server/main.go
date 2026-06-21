@@ -40,6 +40,52 @@ var templateFuncs = template.FuncMap{
 		hue := ((h % 360) + 360) % 360
 		return template.CSS(fmt.Sprintf("hsl(%d, 55%%, 52%%)", hue))
 	},
+	// identicon genera un SVG identicon 5×5 simmetrico (stile pixel-art retrò)
+	// derivato deterministicamente dallo username. Sicuro: lo username non compare
+	// nell'SVG come testo, viene solo usato come seed per il generatore.
+	"identicon": func(username string) template.HTML {
+		var h uint32
+		for _, r := range username {
+			h = h*31 + uint32(r)
+		}
+		hue := int(h % 360)
+		fg := fmt.Sprintf("hsl(%d,58%%,38%%)", hue)
+		bg := fmt.Sprintf("hsl(%d,35%%,93%%)", hue)
+
+		const (
+			size     = 5
+			cellSize = 8
+			svgSize  = size * cellSize
+		)
+
+		pixels := make([]bool, size*size)
+		seed := h
+		for row := 0; row < size; row++ {
+			for col := 0; col < 3; col++ {
+				seed = seed*1664525 + 1013904223
+				on := (seed>>27)&1 == 1
+				pixels[row*size+col] = on
+				if col < 2 {
+					pixels[row*size+(4-col)] = on // simmetria orizzontale
+				}
+			}
+		}
+
+		var sb strings.Builder
+		fmt.Fprintf(&sb, `<svg width="%d" height="%d" viewBox="0 0 %d %d" xmlns="http://www.w3.org/2000/svg">`,
+			svgSize, svgSize, svgSize, svgSize)
+		fmt.Fprintf(&sb, `<rect width="%d" height="%d" fill="%s"/>`, svgSize, svgSize, bg)
+		for i, on := range pixels {
+			if on {
+				r := i / size
+				c := i % size
+				fmt.Fprintf(&sb, `<rect x="%d" y="%d" width="%d" height="%d" fill="%s"/>`,
+					c*cellSize, r*cellSize, cellSize, cellSize, fg)
+			}
+		}
+		sb.WriteString(`</svg>`)
+		return template.HTML(sb.String())
+	},
 }
 
 func main() {
@@ -103,8 +149,11 @@ func main() {
 		auth.DELETE("/pensieri/:id/versioni/:audienceID", handlers.EliminaVersionePensiero)
 
 		auth.GET("/pensieri/:id/commenti", handlers.GetCommenti)
+		auth.GET("/pensieri/:id/commenti/chiudi", handlers.GetCommentiChiudi)
 		auth.POST("/pensieri/:id/commenti", handlers.PostCommento)
 		auth.DELETE("/commenti/:id", handlers.DeleteCommento)
+
+		auth.GET("/users/:username/mini", handlers.GetUserMini)
 
 		auth.POST("/curious/:id", handlers.PostCurious)
 		auth.POST("/curious/:id/accept", handlers.PostCuriousAccept)

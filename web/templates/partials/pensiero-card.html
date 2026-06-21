@@ -1,9 +1,27 @@
 {{define "pensiero-card"}}
 <div class="pensiero-card">
   <div class="pensiero-meta">
-    <span class="author">@{{.AuthorName}}</span>
+    <span class="user-tooltip-wrap">
+      <details class="user-tooltip">
+        <summary class="author">@{{.AuthorName}}</summary>
+        <div class="user-tooltip-card"
+             hx-get="/users/{{.AuthorName}}/mini"
+             hx-trigger="toggle from:closest details once"
+             hx-target="this"
+             hx-swap="innerHTML"></div>
+      </details>
+    </span>
     <span style="color:var(--text-dim)">su</span>
-    <span class="subject">@{{.SubjectName}}</span>
+    <span class="user-tooltip-wrap">
+      <details class="user-tooltip">
+        <summary class="subject">@{{.SubjectName}}</summary>
+        <div class="user-tooltip-card"
+             hx-get="/users/{{.SubjectName}}/mini"
+             hx-trigger="toggle from:closest details once"
+             hx-target="this"
+             hx-swap="innerHTML"></div>
+      </details>
+    </span>
     {{if .IsDirect}}<span class="badge-direct">versione diretta</span>{{end}}
   </div>
   <div class="pensiero-contenuto">{{.Content}}</div>

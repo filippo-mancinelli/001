@@ -1,0 +1,11 @@
+{{define "user-mini-card"}}
+<div class="user-mini-inner">
+  <div class="user-mini-icon">{{identicon .Username}}</div>
+  <div class="user-mini-info">
+    {{if .DisplayName}}
+    <div class="user-mini-name">{{.DisplayName}}</div>
+    {{end}}
+    <div class="user-mini-handle">@{{.Username}}</div>
+  </div>
+</div>
+{{end}}

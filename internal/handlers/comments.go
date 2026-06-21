@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"pensieri/internal/db"
@@ -11,11 +12,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// maxLunghezzaCommento limita la dimensione di un commento per evitare abusi.
 const maxLunghezzaCommento = 1000
+const commentPageSize = 20
 
 // GetCommenti restituisce il thread dei commenti di un pensiero (lista + form),
 // usato per espandere i commenti sotto la card via HTMX.
+// Con ?offset=N restituisce solo i commenti aggiuntivi (paginazione "load more").
 func GetCommenti(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 	pensieroID := c.Param("id")
@@ -25,7 +27,44 @@ func GetCommenti(c *gin.Context) {
 		return
 	}
 
-	renderThreadCommenti(c, pensieroID, user.ID)
+	offset := 0
+	if v := c.Query("offset"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			offset = n
+		}
+	}
+
+	if offset > 0 {
+		renderCommentiPiu(c, pensieroID, user.ID, offset)
+	} else {
+		renderThreadCommenti(c, pensieroID, user.ID)
+	}
+}
+
+// GetCommentiChiudi restituisce solo il pulsante toggle iniziale,
+// permettendo di collassare i commenti tramite HTMX.
+func GetCommentiChiudi(c *gin.Context) {
+	pensieroID := c.Param("id")
+	var count int
+	db.Pool.QueryRow(context.Background(),
+		`SELECT COUNT(*) FROM commenti WHERE pensiero_id = $1`, pensieroID).Scan(&count)
+	c.HTML(http.StatusOK, "commenti-chiudi", gin.H{
+		"PensieroID":   pensieroID,
+		"CommentCount": count,
+	})
+}
+
+// GetUserMini restituisce la mini card utente per i tooltip sullo username.
+func GetUserMini(c *gin.Context) {
+	username := c.Param("username")
+	var u models.User
+	err := db.Pool.QueryRow(context.Background(),
+		`SELECT username, COALESCE(display_name, '') FROM users WHERE username = $1`,
+		username).Scan(&u.Username, &u.DisplayName)
+	if err != nil {
+		u.Username = username
+	}
+	c.HTML(http.StatusOK, "user-mini-card", u)
 }
 
 // PostCommento aggiunge un commento a un pensiero e ri-renderizza il thread.
@@ -109,9 +148,43 @@ func pensieroEsiste(pensieroID string) bool {
 	return exists
 }
 
-// renderThreadCommenti carica i commenti di un pensiero risolti per il viewer
-// e rende il partial "commenti-thread".
+// renderThreadCommenti carica i primi commentPageSize commenti e rende il
+// partial "commenti-thread" con eventuale pulsante "carica altri".
 func renderThreadCommenti(c *gin.Context, pensieroID, viewerID string) {
+	commenti := queryCommenti(pensieroID, viewerID, 0)
+
+	hasMore := len(commenti) > commentPageSize
+	if hasMore {
+		commenti = commenti[:commentPageSize]
+	}
+
+	c.HTML(http.StatusOK, "commenti-thread", gin.H{
+		"PensieroID": pensieroID,
+		"Commenti":   commenti,
+		"HasMore":    hasMore,
+		"NextOffset": commentPageSize,
+	})
+}
+
+// renderCommentiPiu carica una pagina successiva di commenti e rende
+// il partial "commenti-piu" (solo i nuovi item + eventuale nuovo bottone).
+func renderCommentiPiu(c *gin.Context, pensieroID, viewerID string, offset int) {
+	commenti := queryCommenti(pensieroID, viewerID, offset)
+
+	hasMore := len(commenti) > commentPageSize
+	if hasMore {
+		commenti = commenti[:commentPageSize]
+	}
+
+	c.HTML(http.StatusOK, "commenti-piu", gin.H{
+		"PensieroID": pensieroID,
+		"Commenti":   commenti,
+		"HasMore":    hasMore,
+		"NextOffset": offset + commentPageSize,
+	})
+}
+
+func queryCommenti(pensieroID, viewerID string, offset int) []models.Commento {
 	rows, err := db.Pool.Query(context.Background(), `
 		SELECT cm.id, cm.author_id, u.username, COALESCE(u.avatar_url, ''), cm.content, cm.created_at,
 		       (cm.author_id = $2 OR p.author_id = $2) AS can_delete
@@ -120,23 +193,21 @@ func renderThreadCommenti(c *gin.Context, pensieroID, viewerID string) {
 		JOIN pensieri p ON p.id = cm.pensiero_id
 		WHERE cm.pensiero_id = $1
 		ORDER BY cm.created_at ASC
-	`, pensieroID, viewerID)
+		LIMIT $3 OFFSET $4
+	`, pensieroID, viewerID, commentPageSize+1, offset)
 
 	var commenti []models.Commento
-	if err == nil {
-		defer rows.Close()
-		for rows.Next() {
-			var cm models.Commento
-			cm.PensieroID = pensieroID
-			if rows.Scan(&cm.ID, &cm.AuthorID, &cm.AuthorName, &cm.AuthorAvatar, &cm.Content,
-				&cm.CreatedAt, &cm.CanDelete) == nil {
-				commenti = append(commenti, cm)
-			}
+	if err != nil {
+		return commenti
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var cm models.Commento
+		cm.PensieroID = pensieroID
+		if rows.Scan(&cm.ID, &cm.AuthorID, &cm.AuthorName, &cm.AuthorAvatar, &cm.Content,
+			&cm.CreatedAt, &cm.CanDelete) == nil {
+			commenti = append(commenti, cm)
 		}
 	}
-
-	c.HTML(http.StatusOK, "commenti-thread", gin.H{
-		"PensieroID": pensieroID,
-		"Commenti":   commenti,
-	})
+	return commenti
 }
