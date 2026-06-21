@@ -29,8 +29,9 @@
   <div class="pensiero-azioni">
     <button class="btn btn-amber btn-sm"
       hx-post="/curious/{{.PensieroID}}"
-      hx-target="closest .pensiero-card"
-      hx-swap="outerHTML">
+      hx-target="closest .pensiero-azioni"
+      hx-swap="outerHTML"
+      hx-disabled-elt="this">
       [ sono curioso ]
     </button>
   </div>
