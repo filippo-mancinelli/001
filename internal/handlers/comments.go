@@ -113,7 +113,7 @@ func pensieroEsiste(pensieroID string) bool {
 // e rende il partial "commenti-thread".
 func renderThreadCommenti(c *gin.Context, pensieroID, viewerID string) {
 	rows, err := db.Pool.Query(context.Background(), `
-		SELECT cm.id, cm.author_id, u.username, cm.content, cm.created_at,
+		SELECT cm.id, cm.author_id, u.username, COALESCE(u.avatar_url, ''), cm.content, cm.created_at,
 		       (cm.author_id = $2 OR p.author_id = $2) AS can_delete
 		FROM commenti cm
 		JOIN users u ON u.id = cm.author_id
@@ -128,7 +128,7 @@ func renderThreadCommenti(c *gin.Context, pensieroID, viewerID string) {
 		for rows.Next() {
 			var cm models.Commento
 			cm.PensieroID = pensieroID
-			if rows.Scan(&cm.ID, &cm.AuthorID, &cm.AuthorName, &cm.Content,
+			if rows.Scan(&cm.ID, &cm.AuthorID, &cm.AuthorName, &cm.AuthorAvatar, &cm.Content,
 				&cm.CreatedAt, &cm.CanDelete) == nil {
 				commenti = append(commenti, cm)
 			}

@@ -28,13 +28,17 @@ var templateFuncs = template.FuncMap{
 		return strings.ToUpper(string(r[0]))
 	},
 	// avatarColor deriva un colore stabile dallo username (avatar generato).
-	"avatarColor": func(s string) string {
+	// Ritorna template.CSS perché il valore finisce in un attributo style: senza
+	// il tipo CSS il sanitizer di html/template lo sostituirebbe con "ZgotmplZ",
+	// lasciando gli avatar fallback bianchi. Il colore deriva da un hash dello
+	// username (nessun input arbitrario), quindi è sicuro marcarlo come CSS.
+	"avatarColor": func(s string) template.CSS {
 		var h int32
 		for _, r := range s {
 			h = h*31 + r
 		}
 		hue := ((h % 360) + 360) % 360
-		return fmt.Sprintf("hsl(%d, 55%%, 52%%)", hue)
+		return template.CSS(fmt.Sprintf("hsl(%d, 55%%, 52%%)", hue))
 	},
 }
 
