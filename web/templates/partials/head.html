@@ -34,21 +34,25 @@
     });
   }
 
-  // mostra il link "installa" solo se l'app non è già installata come PWA
+  // mostra il link "installa" solo quando il browser segnala che l'app è installabile
+  // (beforeinstallprompt non scatta mai dentro la PWA già aperta)
   (function () {
     function isPWA() {
       return window.matchMedia('(display-mode: standalone)').matches ||
              window.matchMedia('(display-mode: minimal-ui)').matches ||
              navigator.standalone === true;
     }
-    function syncInstallBtn() {
-      var links = document.querySelectorAll('[data-pwa-install]');
-      var hide = isPWA();
-      for (var i = 0; i < links.length; i++) links[i].hidden = hide;
-    }
     if (isPWA()) return;
-    document.addEventListener('DOMContentLoaded', syncInstallBtn);
-    window.matchMedia('(display-mode: standalone)').addEventListener('change', syncInstallBtn);
+    window.addEventListener('beforeinstallprompt', function () {
+      var links = document.querySelectorAll('[data-pwa-install]');
+      for (var i = 0; i < links.length; i++) links[i].hidden = false;
+    });
+    window.matchMedia('(display-mode: standalone)').addEventListener('change', function (e) {
+      if (e.matches) {
+        var links = document.querySelectorAll('[data-pwa-install]');
+        for (var i = 0; i < links.length; i++) links[i].hidden = true;
+      }
+    });
   })();
 
   // evidenzia la voce di navigazione corrispondente alla pagina attiva
