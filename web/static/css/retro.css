@@ -295,6 +295,47 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
 }
 
+/* ===== COMMENTI ===== */
+.pensiero-commenti { margin-top: 0.7rem; padding-top: 0.55rem; border-top: 1px dashed var(--border-soft); }
+
+.commenti-toggle {
+  background: none; border: none; cursor: pointer;
+  font-family: inherit; font-size: 0.72rem; font-weight: 700;
+  color: var(--blue-dark); letter-spacing: 0.02em; padding: 0.15rem 0;
+}
+.commenti-toggle:hover { color: var(--blue); text-decoration: underline; }
+
+.commenti-thread { animation: cardin 0.18s var(--ease); }
+
+.commenti-lista { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 0.6rem; }
+
+.commento {
+  background: #f4f8fd; border: 1px solid var(--border-soft);
+  border-radius: 6px; padding: 0.45rem 0.6rem;
+}
+.commento-head {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 0.7rem; color: var(--text-dim); margin-bottom: 0.2rem;
+}
+.commento-autore { color: var(--cyan); font-weight: 700; }
+.commento-data { color: var(--text-dim); }
+.commento-del {
+  margin-left: auto; background: none; border: none; cursor: pointer;
+  color: var(--red); font-size: 1rem; line-height: 1; padding: 0 0.2rem;
+}
+.commento-del:hover { color: #a01f1f; }
+.commento-testo {
+  font-size: 0.84rem; line-height: 1.5; color: #333a43;
+  white-space: pre-wrap; word-break: break-word;
+}
+
+.commenti-vuoto { font-size: 0.76rem; color: var(--text-dim); margin-bottom: 0.6rem; }
+
+.commento-form { display: flex; gap: 0.5rem; align-items: flex-start; }
+.commento-form textarea {
+  flex: 1; resize: vertical; min-height: 2.2rem; font-size: 0.84rem;
+}
+
 /* ===== USER LIST ===== */
 .user-row {
   display: flex; align-items: center; gap: 1rem;

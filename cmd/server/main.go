@@ -98,6 +98,10 @@ func main() {
 		auth.POST("/pensieri/:id/versioni", handlers.PostVersionePensiero)
 		auth.DELETE("/pensieri/:id/versioni/:audienceID", handlers.EliminaVersionePensiero)
 
+		auth.GET("/pensieri/:id/commenti", handlers.GetCommenti)
+		auth.POST("/pensieri/:id/commenti", handlers.PostCommento)
+		auth.DELETE("/commenti/:id", handlers.DeleteCommento)
+
 		auth.POST("/curious/:id", handlers.PostCurious)
 		auth.POST("/curious/:id/accept", handlers.PostCuriousAccept)
 		auth.POST("/curious/:id/reject", handlers.PostCuriousReject)

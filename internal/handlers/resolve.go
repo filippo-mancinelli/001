@@ -58,12 +58,18 @@ func curiosoInAttesa(viewer string) string {
 		WHERE cr.pensiero_id = t.id AND cr.requester_id = ` + viewer + ` AND cr.status = 'pending')`
 }
 
+// contaCommenti restituisce il numero di commenti collegati al pensiero.
+func contaCommenti() string {
+	return `(SELECT COUNT(*) FROM commenti WHERE pensiero_id = t.id)`
+}
+
 // colonneRisolte assembla le colonne risolte (content, is_direct,
-// can_send_curious, curious_pending) per un viewer, nell'ordine atteso dallo
-// scan dei PensieroRisolto.
+// can_send_curious, curious_pending, comment_count) per un viewer, nell'ordine
+// atteso dallo scan dei PensieroRisolto.
 func colonneRisolte(viewer string) string {
 	return resolviContenuto(viewer) + ` AS content,
 		` + isDiretta(viewer) + ` AS is_direct,
 		` + puoCurioso(viewer) + ` AS can_send_curious,
-		` + curiosoInAttesa(viewer) + ` AS curious_pending`
+		` + curiosoInAttesa(viewer) + ` AS curious_pending,
+		` + contaCommenti() + ` AS comment_count`
 }
