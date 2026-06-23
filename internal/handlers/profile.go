@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"pensieri/internal/db"
 	"pensieri/internal/models"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,7 +35,7 @@ func GetFeed(c *gin.Context) {
 		for rows.Next() {
 			var rt models.PensieroRisolto
 			rows.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
+				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt, &rt.Crowned)
 			rt.CanModerate = user.IsAdmin
 			if rt.Content != "" {
 				pensieri = append(pensieri, rt)
@@ -58,7 +59,7 @@ func GetFeed(c *gin.Context) {
 		    SELECT 1 FROM versioni_pensiero vp
 		    WHERE vp.pensiero_id = t.id AND vp.audience_id IS NULL
 		  )
-		ORDER BY t.updated_at DESC
+		ORDER BY t.crowned DESC, t.updated_at DESC
 		LIMIT 30
 	`, user.ID)
 	if err2 == nil {
@@ -66,7 +67,7 @@ func GetFeed(c *gin.Context) {
 		for rows2.Next() {
 			var rt models.PensieroRisolto
 			rows2.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
+				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt, &rt.Crowned)
 			rt.CanModerate = user.IsAdmin
 			rt.Anon = !auth
 			if rt.Content != "" {
@@ -75,7 +76,21 @@ func GetFeed(c *gin.Context) {
 		}
 	}
 
+	// i pensieri coronati dagli admin vanno in primo piano (mantenendo per il
+	// resto l'ordine cronologico già applicato dalle query).
+	coronatiPrima(pensieri)
+	coronatiPrima(pubblici)
+
 	c.HTML(http.StatusOK, "feed.html", gin.H{"User": viewerForTemplate(user, auth), "Pensieri": pensieri, "Pubblici": pubblici})
+}
+
+// coronatiPrima riordina in place una lista di pensieri portando quelli
+// coronati in cima, in modo stabile (l'ordine relativo degli altri resta
+// invariato).
+func coronatiPrima(ps []models.PensieroRisolto) {
+	sort.SliceStable(ps, func(i, j int) bool {
+		return ps[i].Crowned && !ps[j].Crowned
+	})
 }
 
 // viewerForTemplate restituisce l'utente da passare ai template come ".User":
@@ -136,7 +151,8 @@ func GetProfile(c *gin.Context) {
 			`+contaCommenti()+` AS comment_count,
 			`+contaDna()+` AS dna_count,
 			`+dnaFatto("$2")+` AS dna_done,
-			t.created_at AS created_at
+			t.created_at AS created_at,
+			t.crowned AS crowned
 		FROM pensieri t
 		JOIN users u_a ON u_a.id = t.author_id
 		JOIN users u_s ON u_s.id = t.subject_id
@@ -149,7 +165,7 @@ func GetProfile(c *gin.Context) {
 	for righe.Next() {
 		var rt models.PensieroRisolto
 		righe.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
+			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt, &rt.Crowned)
 		rt.CanModerate = user.IsAdmin
 		rt.Anon = !auth
 		if rt.Content != "" {
@@ -174,7 +190,7 @@ func GetProfile(c *gin.Context) {
 	for righeSu.Next() {
 		var rt models.PensieroRisolto
 		righeSu.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
+			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt, &rt.Crowned)
 		rt.CanModerate = user.IsAdmin
 		rt.Anon = !auth
 		if rt.Content != "" {

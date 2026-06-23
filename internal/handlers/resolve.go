@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"context"
+	"pensieri/internal/db"
 	"pensieri/internal/models"
 
 	"github.com/gin-gonic/gin"
@@ -107,5 +109,44 @@ func colonneRisolte(viewer string) string {
 		` + contaCommenti() + ` AS comment_count,
 		` + contaDna() + ` AS dna_count,
 		` + dnaFatto(viewer) + ` AS dna_done,
-		t.created_at AS created_at`
+		t.created_at AS created_at,
+		t.crowned AS crowned`
+}
+
+// risolviPensiero risolve un singolo pensiero per uno specifico viewer, con la
+// stessa logica di visibilità della pagina dedicata (l'autore vede sempre la
+// propria versione diretta, gli altri seguono le regole standard). È usata sia
+// dalla pagina del singolo pensiero sia per ri-renderizzare la card dopo aver
+// coronato/decoronato un pensiero. Restituisce un errore se il pensiero non
+// esiste o se il viewer non ha accesso ad alcuna versione (content vuoto).
+func risolviPensiero(ctx context.Context, pensieroID, viewerID string) (models.PensieroRisolto, error) {
+	row := db.Pool.QueryRow(ctx, `
+		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
+			CASE WHEN t.author_id = $2 THEN
+				COALESCE(
+					(SELECT content FROM versioni_pensiero WHERE pensiero_id = t.id AND audience_id = t.subject_id),
+					(SELECT content FROM versioni_pensiero WHERE pensiero_id = t.id AND audience_id IS NULL)
+				)
+			ELSE `+resolviContenuto("$2")+` END AS content,
+			(t.author_id = $2 OR `+isDiretta("$2")+`) AS is_direct,
+			(t.author_id <> $2 AND `+puoCurioso("$2")+`) AS can_send_curious,
+			`+curiosoInAttesa("$2")+` AS curious_pending,
+			`+contaCommenti()+` AS comment_count,
+			`+contaDna()+` AS dna_count,
+			`+dnaFatto("$2")+` AS dna_done,
+			t.created_at AS created_at,
+			t.crowned AS crowned
+		FROM pensieri t
+		JOIN users u_a ON u_a.id = t.author_id
+		JOIN users u_s ON u_s.id = t.subject_id
+		WHERE t.id = $1
+	`, pensieroID, viewerID)
+
+	var rt models.PensieroRisolto
+	if err := row.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
+		&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount,
+		&rt.DnaCount, &rt.DnaDone, &rt.CreatedAt, &rt.Crowned); err != nil {
+		return rt, err
+	}
+	return rt, nil
 }

@@ -196,6 +196,8 @@ func main() {
 		auth.DELETE("/pensieri/:id/versioni/:audienceID", handlers.EliminaVersionePensiero)
 		// moderazione: solo gli admin possono eliminare un intero pensiero
 		auth.DELETE("/pensieri/:id", handlers.DeletePensiero)
+		// moderazione: solo gli admin possono coronare/decoronare un pensiero
+		auth.POST("/pensieri/:id/corona", handlers.PostCorona)
 
 		auth.POST("/pensieri/:id/commenti", handlers.PostCommento)
 		auth.DELETE("/commenti/:id", handlers.DeleteCommento)
