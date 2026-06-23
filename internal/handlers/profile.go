@@ -127,11 +127,11 @@ func GetProfile(c *gin.Context) {
 
 	// rete di conoscenze del profilo: chi segue (following) e chi lo segue (followers)
 	following := connections(c, `
-		SELECT u.id, u.username, COALESCE(u.display_name,''), COALESCE(u.avatar_url,''), COALESCE(u.presence,'online')
+		SELECT u.id, u.username, COALESCE(u.display_name,''), COALESCE(u.avatar_url,''), `+models.PresenceExpr("u")+`
 		FROM follows f JOIN users u ON u.id = f.following_id WHERE f.follower_id = $1
 		ORDER BY u.username`, profile.ID)
 	followers := connections(c, `
-		SELECT u.id, u.username, COALESCE(u.display_name,''), COALESCE(u.avatar_url,''), COALESCE(u.presence,'online')
+		SELECT u.id, u.username, COALESCE(u.display_name,''), COALESCE(u.avatar_url,''), `+models.PresenceExpr("u")+`
 		FROM follows f JOIN users u ON u.id = f.follower_id WHERE f.following_id = $1
 		ORDER BY u.username`, profile.ID)
 

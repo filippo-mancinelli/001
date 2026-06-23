@@ -105,6 +105,12 @@ func PostRegister(c *gin.Context) {
 func PostLogout(c *gin.Context) {
 	token, _ := c.Cookie("session_token")
 	if token != "" {
+		// azzera last_seen così l'utente risulta offline immediatamente, poi
+		// rimuove la sessione. L'ordine è sicuro perché touchPresence (middleware)
+		// è sincrono e ha già scritto NOW() prima di arrivare qui.
+		db.Pool.Exec(context.Background(),
+			`UPDATE users u SET last_seen = NULL
+			 FROM sessions s WHERE s.token = $1 AND u.id = s.user_id`, token)
 		db.Pool.Exec(context.Background(), `DELETE FROM sessions WHERE token = $1`, token)
 	}
 	c.SetCookie("session_token", "", -1, "/", "", false, true)

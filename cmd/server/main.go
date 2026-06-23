@@ -186,11 +186,13 @@ func main() {
 		auth.GET("/notifications", handlers.GetNotifications)
 		auth.GET("/notifications/count", handlers.GetNotificationsCount)
 		auth.GET("/network", handlers.GetNetwork)
+		auth.POST("/presence/ping", handlers.PostPresencePing)
 
 		auth.POST("/pensieri", handlers.PostPensiero)
 		auth.GET("/pensieri/nuovo", handlers.GetEditorPensiero)
 		auth.GET("/pensieri/annulla", handlers.AnnullaEditorPensiero)
 		auth.GET("/pensieri/:id", handlers.GetPensiero)
+		auth.GET("/pensieri/:id/versione", handlers.GetPensieroVersione)
 		auth.GET("/pensieri/:id/modifica", handlers.GetEditorPensiero)
 		auth.POST("/pensieri/:id/versioni", handlers.PostVersionePensiero)
 		auth.DELETE("/pensieri/:id/versioni/:audienceID", handlers.EliminaVersionePensiero)

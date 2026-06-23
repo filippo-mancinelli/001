@@ -133,6 +133,48 @@ func GetPensiero(c *gin.Context) {
 	c.HTML(http.StatusOK, "pensiero.html", gin.H{"User": user, "Pensiero": rt})
 }
 
+// GetPensieroVersione ri-renderizza la card di un pensiero mostrando una
+// versione specifica (pubblica o personale). È riservata ai viewer che hanno
+// accesso a entrambe le versioni — l'autore, il soggetto del pensiero o chi ha
+// avuto accettata la richiesta "sono curioso" — e permette di alternare le due
+// senza perdere l'accesso a quella pubblica dopo aver sbloccato la personale.
+func GetPensieroVersione(c *gin.Context) {
+	user := c.MustGet("user").(models.User)
+	pensieroID := c.Param("id")
+	vista := c.Query("vista")
+
+	rt, err := risolviPensiero(context.Background(), pensieroID, user.ID)
+	if err != nil || rt.Content == "" {
+		c.String(http.StatusNotFound, "pensiero non trovato")
+		return
+	}
+
+	// Solo chi vede la versione diretta (autore, soggetto o curioso accettato)
+	// può alternare le versioni: per gli altri la pubblica è l'unica visibile.
+	if !rt.IsDirect {
+		c.String(http.StatusForbidden, "non autorizzato")
+		return
+	}
+
+	rt.CanModerate = user.IsAdmin
+	rt.CanToggleVersion = true
+
+	if vista == "pubblica" {
+		var pub string
+		if err := db.Pool.QueryRow(context.Background(),
+			`SELECT content FROM versioni_pensiero WHERE pensiero_id = $1 AND audience_id IS NULL`,
+			pensieroID).Scan(&pub); err != nil {
+			c.String(http.StatusNotFound, "versione pubblica non trovata")
+			return
+		}
+		rt.Content = pub
+		rt.IsDirect = false
+	}
+	// vista "personale" (default): rt è già risolto sulla versione diretta.
+
+	c.HTML(http.StatusOK, "pensiero-card", rt)
+}
+
 func PostVersionePensiero(c *gin.Context) {
 	pensieroID := c.Param("id")
 	audienceID := c.PostForm("audience_id")

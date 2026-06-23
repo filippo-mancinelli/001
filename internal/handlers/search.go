@@ -45,7 +45,7 @@ func queryUsers(user models.User, q string) ([]models.User, string) {
 	if len(q) >= 2 {
 		rows, err := db.Pool.Query(context.Background(), `
 			SELECT id, username, COALESCE(bio, ''), COALESCE(display_name,''),
-			       COALESCE(avatar_url,''), COALESCE(presence,'online')
+			       COALESCE(avatar_url,''), `+models.PresenceExpr("")+`
 			FROM users
 			WHERE username ILIKE '%' || $1 || '%' AND id <> $2
 			ORDER BY username
@@ -65,7 +65,7 @@ func queryUsers(user models.User, q string) ([]models.User, string) {
 	// Suggeriti: utenti con più follower che il viewer non segue ancora.
 	rows, err := db.Pool.Query(context.Background(), `
 		SELECT u.id, u.username, COALESCE(u.bio, ''), COALESCE(u.display_name,''),
-		       COALESCE(u.avatar_url,''), COALESCE(u.presence,'online')
+		       COALESCE(u.avatar_url,''), `+models.PresenceExpr("u")+`
 		FROM users u
 		LEFT JOIN follows f ON f.follower_id = $1 AND f.following_id = u.id
 		WHERE u.id <> $1 AND f.following_id IS NULL

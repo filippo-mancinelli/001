@@ -33,6 +33,13 @@ type PensieroRisolto struct {
 	CanSendCurious bool // il viewer può chiedere di vedere la versione diretta
 	CuriousPending bool // il viewer ha una richiesta in attesa
 
+	// CanToggleVersion è true quando il viewer ha accesso a entrambe le versioni
+	// (pubblica e personale) e sta guardando la pubblica per scelta: serve a
+	// mostrare comunque lo switch per tornare alla personale. Quando guarda la
+	// personale lo switch è già implicito in IsDirect, quindi questo flag non
+	// viene popolato nei render di default (resta false).
+	CanToggleVersion bool
+
 	CommentCount int // numero di commenti collegati al pensiero
 
 	// "DNA": il like del pensiero (doppia elica). DnaCount è il totale,

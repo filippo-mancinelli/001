@@ -59,7 +59,23 @@
              hx-swap="innerHTML"></div>
       </details>
     </span>
-    {{if .IsDirect}}<span class="badge-direct">versione personale</span>{{end}}
+    {{if .IsDirect}}
+    <span class="badge-direct">versione personale</span>
+    {{if not .Anon}}
+    <button type="button" class="badge-toggle"
+      hx-get="/pensieri/{{.PensieroID}}/versione?vista=pubblica"
+      hx-target="#pensiero-{{.PensieroID}}"
+      hx-swap="outerHTML"
+      title="mostra la versione pubblica">[ vedi pubblica ]</button>
+    {{end}}
+    {{else if .CanToggleVersion}}
+    <span class="badge-public">versione pubblica</span>
+    <button type="button" class="badge-toggle"
+      hx-get="/pensieri/{{.PensieroID}}/versione?vista=personale"
+      hx-target="#pensiero-{{.PensieroID}}"
+      hx-swap="outerHTML"
+      title="mostra la versione personale">[ vedi personale ]</button>
+    {{end}}
     <span class="pensiero-data">{{.CreatedAt.Format "02/01/2006 15:04"}}</span>
   </div>
   <div class="pensiero-contenuto">{{.Content}}</div>

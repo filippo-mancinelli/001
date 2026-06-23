@@ -34,9 +34,21 @@ func Auth() gin.HandlerFunc {
 			return
 		}
 
+		touchPresence(user.ID)
 		c.Set("user", user)
 		c.Next()
 	}
+}
+
+// touchPresence registra l'attività dell'utente aggiornando il suo ultimo battito
+// (last_seen): è ciò che lo mantiene "online". Viene chiamata a ogni richiesta
+// autenticata (navigazione e heartbeat periodico del client); quando l'app/tab si
+// chiude i battiti cessano e l'utente torna automaticamente offline. È sincrona —
+// un UPDATE per chiave primaria è trascurabile — così l'ordine con eventuali altre
+// scritture nella stessa richiesta (es. l'azzeramento al logout) è deterministico.
+func touchPresence(userID string) {
+	db.Pool.Exec(context.Background(),
+		`UPDATE users SET last_seen = NOW() WHERE id = $1`, userID)
 }
 
 // redirectGuest interrompe la richiesta indirizzando l'utente a dest. Per le
@@ -84,6 +96,7 @@ func OptionalAuth() gin.HandlerFunc {
 			WHERE s.token = $1 AND s.expires_at > $2
 		`, token, time.Now())
 		if err = models.ScanUser(row, &user); err == nil {
+			touchPresence(user.ID)
 			c.Set("user", user)
 		}
 		c.Next()
