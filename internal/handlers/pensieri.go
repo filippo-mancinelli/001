@@ -93,7 +93,10 @@ func PostPensiero(c *gin.Context) {
 
 	// notifica il soggetto del pensiero (se diverso dall'autore)
 	if subjectID != user.ID {
-		notify(subjectID, "new_thought", map[string]string{"author_name": user.Username})
+		notify(subjectID, "new_thought", map[string]string{
+			"author_name": user.Username,
+			"pensiero_id": pensieroID,
+		})
 	}
 
 	// risposta HTMX: svuota editor con messaggio conferma
@@ -102,6 +105,55 @@ func PostPensiero(c *gin.Context) {
 			[ pensiero salvato ] — <a href="">ricarica la pagina</a>
 		</div>
 	`))
+}
+
+// GetPensiero mostra un singolo pensiero "a schermo intero", su una pagina
+// dedicata che contiene solo quel pensiero con il suo thread di commenti.
+// È la destinazione dei link nelle notifiche (nuovo pensiero, DNA, commento…),
+// utile per raggiungere direttamente un pensiero anche quando il thread è lungo.
+func GetPensiero(c *gin.Context) {
+	user := c.MustGet("user").(models.User)
+	pensieroID := c.Param("id")
+
+	// risolto per il viewer: l'autore vede sempre la propria versione diretta,
+	// gli altri seguono la normale logica di visibilità.
+	row := db.Pool.QueryRow(context.Background(), `
+		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
+			CASE WHEN t.author_id = $2 THEN
+				COALESCE(
+					(SELECT content FROM versioni_pensiero WHERE pensiero_id = t.id AND audience_id = t.subject_id),
+					(SELECT content FROM versioni_pensiero WHERE pensiero_id = t.id AND audience_id IS NULL)
+				)
+			ELSE `+resolviContenuto("$2")+` END AS content,
+			(t.author_id = $2 OR `+isDiretta("$2")+`) AS is_direct,
+			(t.author_id <> $2 AND `+puoCurioso("$2")+`) AS can_send_curious,
+			`+curiosoInAttesa("$2")+` AS curious_pending,
+			`+contaCommenti()+` AS comment_count,
+			`+contaDna()+` AS dna_count,
+			`+dnaFatto("$2")+` AS dna_done,
+			t.created_at AS created_at
+		FROM pensieri t
+		JOIN users u_a ON u_a.id = t.author_id
+		JOIN users u_s ON u_s.id = t.subject_id
+		WHERE t.id = $1
+	`, pensieroID, user.ID)
+
+	var rt models.PensieroRisolto
+	if err := row.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
+		&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount,
+		&rt.DnaCount, &rt.DnaDone, &rt.CreatedAt); err != nil {
+		c.HTML(http.StatusNotFound, "pensiero.html", gin.H{"User": user})
+		return
+	}
+	rt.CanModerate = user.IsAdmin
+
+	// il contenuto vuoto significa che il viewer non ha accesso a nessuna versione
+	if rt.Content == "" {
+		c.HTML(http.StatusNotFound, "pensiero.html", gin.H{"User": user})
+		return
+	}
+
+	c.HTML(http.StatusOK, "pensiero.html", gin.H{"User": user, "Pensiero": rt})
 }
 
 func PostVersionePensiero(c *gin.Context) {

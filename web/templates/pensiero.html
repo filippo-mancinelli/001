@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>pensieri // pensiero</title></head>
+<body>
+{{template "nav" .}}
+<div class="container" style="padding-top:1rem">
+  <div class="panel">
+    <div class="panel-title">// pensiero</div>
+    <a href="/" class="back-link">[ ← torna al feed ]</a>
+    {{if .Pensiero}}
+      {{template "pensiero-card" .Pensiero}}
+      <!-- pagina dedicata: apri subito il thread dei commenti -->
+      <div hx-get="/pensieri/{{.Pensiero.PensieroID}}/commenti"
+           hx-trigger="load"
+           hx-target="#commenti-{{.Pensiero.PensieroID}}"
+           hx-swap="innerHTML"></div>
+    {{else}}
+    <div class="empty">
+      pensiero non trovato.<br>
+      <span class="empty-hint">potrebbe essere stato rimosso o non hai accesso a questa versione.</span>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{template "statusbar" .}}
+</body>
+</html>
