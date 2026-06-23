@@ -30,7 +30,7 @@
   --panel-px: 1.5rem;
   --panel-py: 1.25rem;
 
-  --font: 'Courier New', Courier, monospace;
+  --font: 'Segoe UI', Tahoma, Verdana, Geneva, 'Trebuchet MS', Arial, sans-serif;
   --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
