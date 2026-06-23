@@ -1,5 +1,17 @@
 {{define "pensiero-card"}}
 <div class="pensiero-card">
+  {{if .CuriousPending}}
+  <details class="attesa-tip">
+    <summary class="attesa-btn" aria-label="In attesa di rivelazione">
+      <svg class="attesa-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 2h12"/><path d="M6 22h12"/>
+        <path d="M7 2c0 4 3 5.5 5 7 2-1.5 5-3 5-7"/>
+        <path d="M7 22c0-4 3-5.5 5-7 2 1.5 5 3 5 7"/>
+      </svg>
+    </summary>
+    <span class="attesa-tooltip">in attesa di rivelazione...</span>
+  </details>
+  {{end}}
   <div class="pensiero-meta">
     <span class="user-tooltip-wrap">
       <details class="user-tooltip">
@@ -27,18 +39,13 @@
   <div class="pensiero-contenuto">{{.Content}}</div>
   {{if .CanSendCurious}}
   <div class="pensiero-azioni">
-    <button class="btn btn-amber btn-sm"
+    <button class="btn btn-amber btn-sm btn-curioso"
       hx-post="/curious/{{.PensieroID}}"
       hx-target="closest .pensiero-azioni"
       hx-swap="outerHTML"
       hx-disabled-elt="this">
       [ sono curioso ]
     </button>
-  </div>
-  {{end}}
-  {{if .CuriousPending}}
-  <div class="pensiero-azioni">
-    <span style="color:var(--amber); font-size:0.75rem">richiesta inviata — in attesa...</span>
   </div>
   {{end}}
   <div class="pensiero-reazioni">

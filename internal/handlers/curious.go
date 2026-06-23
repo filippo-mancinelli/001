@@ -48,11 +48,19 @@ func PostCurious(c *gin.Context) {
 		"request_id":     reqID,
 	})
 
-	// risposta HTMX: mostra stato pending
+	// risposta HTMX: rimuove le azioni e mostra la clessidra in alto a destra
+	// (posizionata in modo assoluto rispetto alla card)
 	c.Data(http.StatusOK, "text/html", []byte(`
-		<div class="pensiero-azioni">
-			<span style="color:var(--amber); font-size:0.75rem">richiesta inviata — in attesa...</span>
-		</div>
+		<details class="attesa-tip">
+			<summary class="attesa-btn" aria-label="In attesa di rivelazione">
+				<svg class="attesa-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M6 2h12"/><path d="M6 22h12"/>
+					<path d="M7 2c0 4 3 5.5 5 7 2-1.5 5-3 5-7"/>
+					<path d="M7 22c0-4 3-5.5 5-7 2 1.5 5 3 5 7"/>
+				</svg>
+			</summary>
+			<span class="attesa-tooltip">in attesa di rivelazione...</span>
+		</details>
 	`))
 }
 
