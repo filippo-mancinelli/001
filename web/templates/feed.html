@@ -23,6 +23,12 @@
       nessun aggiornamento.<br>
       <span class="empty-hint">inizia a seguire persone per vedere i loro pensieri.</span>
     </div>
+    {{if .Suggeriti}}
+    <div class="panel-title" style="margin-top:1rem">// suggeriti dal network</div>
+    {{range .Suggeriti}}
+      {{template "user-row" .}}
+    {{end}}
+    {{end}}
     {{end}}
   </div>
 

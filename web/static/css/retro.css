@@ -130,6 +130,7 @@ header .site-title span { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
   color: #eaf2fc; font-size: 0.85rem; font-weight: 600;
   text-transform: capitalize; padding: 0.35rem 0.75rem; border-radius: 5px;
   text-shadow: 0 1px 1px rgba(0,0,0,0.25);
+  background: none; border: none; cursor: pointer;
   transition: background 0.12s, box-shadow 0.12s;
 }
 .nav-item:hover, .nav-act:hover {
@@ -664,6 +665,15 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
   flex: none;
   image-rendering: pixelated;
 }
+.user-mini-icon img {
+  width: 40px; height: 40px;
+  border-radius: 4px;
+  border: 1px solid var(--border-soft);
+  display: block;
+  flex: none;
+  object-fit: cover;
+}
+.user-mini-inner:hover .user-mini-icon img { border-color: var(--cyan); }
 
 .user-mini-name {
   font-weight: 700; font-size: 0.82rem; color: var(--text); line-height: 1.3;

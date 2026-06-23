@@ -1,6 +1,10 @@
 {{define "user-mini-card"}}
 <a class="user-mini-inner" href="/@{{.Username}}">
+  {{if .AvatarURL}}
+  <div class="user-mini-icon"><img class="avatar" src="{{.AvatarURL}}" alt="@{{.Username}}" loading="lazy"></div>
+  {{else}}
   <div class="user-mini-icon">{{identicon .Username}}</div>
+  {{end}}
   <div class="user-mini-info">
     {{if .DisplayName}}
     <div class="user-mini-name">{{.DisplayName}}</div>
