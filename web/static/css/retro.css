@@ -873,6 +873,23 @@ body.help-open { overflow: hidden; }
 .share-btn:active { transform: translateY(1px); }
 .share-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
 
+/* ===== ADMIN BADGE (bollino dorato scintillante) ===== */
+.title-with-badge { display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.admin-badge {
+  display: inline-flex; align-items: center; gap: 0.3em;
+  padding: 0.1em 0.6em;
+  font-size: 0.72em; font-weight: 700; letter-spacing: 0.02em;
+  text-transform: uppercase; white-space: nowrap;
+  color: #5a3d00; text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+  border: 1px solid #b8860b; border-radius: 999px;
+  background: linear-gradient(110deg, #b8860b 0%, #ffd700 25%, #fff6c0 45%, #ffd700 60%, #d4a017 80%, #b8860b 100%);
+  background-size: 200% 100%;
+  box-shadow: 0 1px 3px rgba(120,80,0,0.45), inset 0 1px 1px rgba(255,255,255,0.6);
+  animation: badge-shine 2.6s linear infinite;
+}
+@keyframes badge-shine { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .admin-badge { animation: none; } }
+
 /* ===== MODAL ===== */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 1000;
