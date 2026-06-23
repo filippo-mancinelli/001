@@ -81,6 +81,8 @@ func GetNotifications(c *gin.Context) {
 			nv.Message = fmt.Sprintf("@%s ha trovato un'affinità genetica (DNA) con un tuo pensiero", p["liker_name"])
 		case "new_comment":
 			nv.Message = fmt.Sprintf("@%s ha commentato un tuo pensiero", p["commenter_name"])
+		case "new_thought":
+			nv.Message = fmt.Sprintf("@%s ha espresso un pensiero su di te", p["author_name"])
 		case "new_follower":
 			nv.Message = fmt.Sprintf("@%s ha iniziato a seguirti", p["follower_name"])
 		default:

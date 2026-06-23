@@ -72,6 +72,11 @@ func PostPensiero(c *gin.Context) {
 		return
 	}
 
+	// notifica il soggetto del pensiero (se diverso dall'autore)
+	if subjectID != user.ID {
+		notify(subjectID, "new_thought", map[string]string{"author_name": user.Username})
+	}
+
 	// risposta HTMX: svuota editor con messaggio conferma
 	c.Data(http.StatusOK, "text/html", []byte(`
 		<div style="color:var(--green); font-size:0.8rem; padding:0.5rem 0">
