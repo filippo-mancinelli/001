@@ -106,7 +106,7 @@
 
   <!-- pensieri scritti da questo profilo -->
   <div class="panel">
-    <div class="panel-title">// pensieri</div>
+    <div class="panel-title">// pensieri di @{{.Profile.Username}}</div>
     {{if .IsSelf}}
     <div style="margin-bottom:0.75rem">
       <button class="btn btn-sm"
@@ -135,6 +135,28 @@
       {{end}}
     {{else}}
     <div class="empty">nessun pensiero ancora</div>
+    {{end}}
+  </div>
+
+  <!-- pensieri scritti SU questo profilo -->
+  <div class="panel">
+    <div class="panel-title">// pensieri su di @{{.Profile.Username}}</div>
+    {{if .PensieriSu}}
+      {{$m := 0}}
+      {{range .PensieriSu}}
+        {{$m = add $m 1}}
+        <div class="{{if gt $m 5}}extra-row-pensieri-su hidden{{end}}">
+          {{template "pensiero-card" .}}
+        </div>
+      {{end}}
+      {{if gt (len .PensieriSu) 5}}
+      <button class="btn btn-sm show-more-btn" style="margin-top:0.5rem"
+        onclick="toggleRows('pensieri-su', this)">
+        [ mostra di più ({{sub (len .PensieriSu) 5}}) ]
+      </button>
+      {{end}}
+    {{else}}
+    <div class="empty">ancora nessuno ha scritto su @{{.Profile.Username}}</div>
     {{end}}
   </div>
 
