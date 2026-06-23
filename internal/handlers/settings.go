@@ -66,23 +66,63 @@ func PostProfileSettings(c *gin.Context) {
 	redirectSettings(c, "profilo", "")
 }
 
-// PostAccountSettings aggiorna l'email (impostazioni generali dell'account).
+// PostAccountSettings aggiorna username ed email (impostazioni generali
+// dell'account). Lo username fa parte dell'identità dell'utente: è modificabile,
+// purché valido e non già in uso da un altro account.
 func PostAccountSettings(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
+	username := strings.TrimSpace(c.PostForm("username"))
 	email := strings.TrimSpace(c.PostForm("email"))
 
+	if !validUsername(username) {
+		redirectSettings(c, "", "username-non-valido")
+		return
+	}
 	if !strings.Contains(email, "@") || len(email) > 255 {
 		redirectSettings(c, "", "email-non-valida")
 		return
 	}
 
+	// Se lo username cambia, verifica che non sia già preso (confronto
+	// case-insensitive per evitare collisioni/impersonificazioni come
+	// "mario" vs "Mario"). Si ignora il proprio account.
+	if !strings.EqualFold(username, user.Username) {
+		var exists bool
+		if err := db.Pool.QueryRow(context.Background(),
+			`SELECT EXISTS(SELECT 1 FROM users WHERE lower(username) = lower($1) AND id <> $2)`,
+			username, user.ID).Scan(&exists); err != nil {
+			redirectSettings(c, "", "errore-interno")
+			return
+		}
+		if exists {
+			redirectSettings(c, "", "username-gia-in-uso")
+			return
+		}
+	}
+
 	_, err := db.Pool.Exec(context.Background(),
-		`UPDATE users SET email = $1 WHERE id = $2`, email, user.ID)
+		`UPDATE users SET username = $1, email = $2 WHERE id = $3`, username, email, user.ID)
 	if err != nil {
-		redirectSettings(c, "", "email-gia-in-uso")
+		redirectSettings(c, "", "username-o-email-gia-in-uso")
 		return
 	}
 	redirectSettings(c, "account", "")
+}
+
+// validUsername impone le stesse regole dello username auto-generato:
+// 3-32 caratteri tra lettere, cifre e underscore.
+func validUsername(s string) bool {
+	if len(s) < 3 || len(s) > 32 {
+		return false
+	}
+	for _, r := range s {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9', r == '_':
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 // PostPasswordSettings cambia la password verificando quella attuale.
