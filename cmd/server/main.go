@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"pensieri/internal/assets"
 	"pensieri/internal/db"
 	"pensieri/internal/handlers"
 	"pensieri/internal/middleware"
@@ -88,6 +89,23 @@ var templateFuncs = template.FuncMap{
 	},
 	"add": func(a, b int) int { return a + b },
 	"sub": func(a, b int) int { return a - b },
+	// asset firma l'URL di un asset statico con la versione del contenuto
+	// (?v=hash), così un CSS/JS modificato ottiene un URL nuovo e viene sempre
+	// riscaricato, senza servire versioni stantie dalla cache.
+	"asset": assets.URL,
+}
+
+// staticCacheHeaders imposta gli header di cache per gli asset statici in base
+// alla presenza del token di versione: gli URL versionati sono immutabili e
+// cacheabili per un anno, gli altri solo per pochi minuti.
+func staticCacheHeaders() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.Query("v") != "" {
+			c.Header("Cache-Control", "public, max-age=31536000, immutable")
+		} else {
+			c.Header("Cache-Control", "public, max-age=300")
+		}
+	}
 }
 
 func main() {
@@ -105,7 +123,11 @@ func main() {
 	}
 
 	r := gin.Default()
-	r.Static("/static", "web/static")
+	// Asset statici. Gli URL versionati (?v=hash) sono immutabili: li possiamo
+	// cacheare a lungo termine. Le richieste senza versione (es. icone dal
+	// manifest) usano una cache breve per evitare di servirle stantie.
+	staticGroup := r.Group("/static", staticCacheHeaders())
+	staticGroup.Static("/", "web/static")
 
 	// PWA: manifest e service worker serviti dalla radice (scope "/"),
 	// pagina di installazione pubblica.
