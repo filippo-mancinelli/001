@@ -1,5 +1,5 @@
 {{define "pensiero-card"}}
-<div class="pensiero-card">
+<div class="pensiero-card" id="pensiero-{{.PensieroID}}">
   {{if .CuriousPending}}
   <details class="attesa-tip">
     <summary class="attesa-btn" aria-label="In attesa di rivelazione">
@@ -36,6 +36,13 @@
     </span>
     {{if .IsDirect}}<span class="badge-direct">versione personale</span>{{end}}
     <span class="pensiero-data">{{.CreatedAt.Format "02/01/2006 15:04"}}</span>
+    {{if .CanModerate}}
+    <button class="pensiero-mod-del" title="elimina pensiero (moderazione)"
+      hx-delete="/pensieri/{{.PensieroID}}"
+      hx-target="#pensiero-{{.PensieroID}}"
+      hx-swap="outerHTML"
+      hx-confirm="Eliminare definitivamente questo pensiero? L'azione rimuove anche commenti e versioni.">⛌ elimina</button>
+    {{end}}
   </div>
   <div class="pensiero-contenuto">{{.Content}}</div>
   <div class="pensiero-footer">

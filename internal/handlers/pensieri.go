@@ -123,6 +123,32 @@ func PostVersionePensiero(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+// DeletePensiero elimina un intero pensiero (e a cascata versioni, commenti,
+// richieste di curiosità e DNA). Riservato agli amministratori per moderare
+// contenuti sensibili o vietati. Risponde con HTML vuoto così l'elemento card
+// può essere rimosso dal feed via HTMX (hx-swap="outerHTML").
+func DeletePensiero(c *gin.Context) {
+	user := c.MustGet("user").(models.User)
+	if !user.IsAdmin {
+		c.String(http.StatusForbidden, "non autorizzato")
+		return
+	}
+
+	pensieroID := c.Param("id")
+	tag, err := db.Pool.Exec(context.Background(),
+		`DELETE FROM pensieri WHERE id = $1`, pensieroID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "errore eliminazione")
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		c.String(http.StatusNotFound, "pensiero non trovato")
+		return
+	}
+
+	c.Data(http.StatusOK, "text/html", []byte(""))
+}
+
 func EliminaVersionePensiero(c *gin.Context) {
 	pensieroID := c.Param("id")
 	audienceID := c.Param("audienceID")

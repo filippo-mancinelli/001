@@ -33,6 +33,7 @@ func GetFeed(c *gin.Context) {
 		var rt models.PensieroRisolto
 		rows.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
 			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
+		rt.CanModerate = user.IsAdmin
 		if rt.Content != "" {
 			pensieri = append(pensieri, rt)
 		}
@@ -61,6 +62,7 @@ func GetFeed(c *gin.Context) {
 			var rt models.PensieroRisolto
 			rows2.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
 				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
+			rt.CanModerate = user.IsAdmin
 			if rt.Content != "" {
 				pubblici = append(pubblici, rt)
 			}
@@ -132,6 +134,7 @@ func GetProfile(c *gin.Context) {
 		var rt models.PensieroRisolto
 		righe.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
 			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
+		rt.CanModerate = user.IsAdmin
 		if rt.Content != "" {
 			pensieri = append(pensieri, rt)
 		}
