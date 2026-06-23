@@ -118,6 +118,10 @@ func main() {
 		log.Fatalf("migrations: %v", err)
 	}
 
+	if err := bootstrapAdmins(); err != nil {
+		log.Printf("bootstrap admins: %v", err)
+	}
+
 	r := gin.Default()
 	// asset statici: cache lunga per gli URL versionati, breve per gli altri
 	staticGroup := r.Group("/static", staticCacheHeaders())
@@ -167,6 +171,8 @@ func main() {
 		auth.GET("/pensieri/:id/modifica", handlers.GetEditorPensiero)
 		auth.POST("/pensieri/:id/versioni", handlers.PostVersionePensiero)
 		auth.DELETE("/pensieri/:id/versioni/:audienceID", handlers.EliminaVersionePensiero)
+		// moderazione: solo gli admin possono eliminare un intero pensiero
+		auth.DELETE("/pensieri/:id", handlers.DeletePensiero)
 
 		auth.GET("/pensieri/:id/commenti", handlers.GetCommenti)
 		auth.GET("/pensieri/:id/commenti/chiudi", handlers.GetCommentiChiudi)
@@ -188,6 +194,34 @@ func main() {
 	}
 	log.Printf("server on :%s", port)
 	r.Run(":" + port)
+}
+
+// bootstrapAdmins promuove ad amministratore gli utenti le cui email sono
+// elencate (separate da virgola) nella variabile d'ambiente ADMIN_EMAILS, e
+// revoca il ruolo a chiunque non vi compaia. Viene eseguito a ogni avvio così
+// l'elenco degli admin resta l'unica fonte di verità. Senza ADMIN_EMAILS non
+// tocca nulla (utile per non azzerare admin impostati a mano).
+func bootstrapAdmins() error {
+	raw := strings.TrimSpace(os.Getenv("ADMIN_EMAILS"))
+	if raw == "" {
+		return nil
+	}
+	var emails []string
+	for _, e := range strings.Split(raw, ",") {
+		if e = strings.TrimSpace(strings.ToLower(e)); e != "" {
+			emails = append(emails, e)
+		}
+	}
+	if len(emails) == 0 {
+		return nil
+	}
+	_, err := db.Pool.Exec(context.Background(),
+		`UPDATE users SET is_admin = (LOWER(email) = ANY($1)) WHERE is_admin <> (LOWER(email) = ANY($1))`,
+		emails)
+	if err == nil {
+		log.Printf("admin bootstrap: %d email configurate", len(emails))
+	}
+	return err
 }
 
 func runMigrations() error {

@@ -35,9 +35,9 @@ func GetCommenti(c *gin.Context) {
 	}
 
 	if offset > 0 {
-		renderCommentiPiu(c, pensieroID, user.ID, offset)
+		renderCommentiPiu(c, pensieroID, user, offset)
 	} else {
-		renderThreadCommenti(c, pensieroID, user.ID)
+		renderThreadCommenti(c, pensieroID, user)
 	}
 }
 
@@ -109,11 +109,12 @@ func PostCommento(c *gin.Context) {
 		})
 	}
 
-	renderThreadCommenti(c, pensieroID, user.ID)
+	renderThreadCommenti(c, pensieroID, user)
 }
 
-// DeleteCommento elimina un commento. È consentito all'autore del commento o
-// all'autore del pensiero (moderazione). Ri-renderizza il thread aggiornato.
+// DeleteCommento elimina un commento. È consentito all'autore del commento,
+// all'autore del pensiero o a un amministratore (moderazione di contenuti
+// sensibili o vietati). Ri-renderizza il thread aggiornato.
 func DeleteCommento(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 	commentoID := c.Param("id")
@@ -130,14 +131,14 @@ func DeleteCommento(c *gin.Context) {
 		return
 	}
 
-	if user.ID != commentAuthorID && user.ID != pensieroAuthorID {
+	if user.ID != commentAuthorID && user.ID != pensieroAuthorID && !user.IsAdmin {
 		c.String(http.StatusForbidden, "non autorizzato")
 		return
 	}
 
 	db.Pool.Exec(context.Background(), `DELETE FROM commenti WHERE id = $1`, commentoID)
 
-	renderThreadCommenti(c, pensieroID, user.ID)
+	renderThreadCommenti(c, pensieroID, user)
 }
 
 // pensieroEsiste verifica la presenza di un pensiero per id.
@@ -150,8 +151,8 @@ func pensieroEsiste(pensieroID string) bool {
 
 // renderThreadCommenti carica i primi commentPageSize commenti e rende il
 // partial "commenti-thread" con eventuale pulsante "carica altri".
-func renderThreadCommenti(c *gin.Context, pensieroID, viewerID string) {
-	commenti := queryCommenti(pensieroID, viewerID, 0)
+func renderThreadCommenti(c *gin.Context, pensieroID string, viewer models.User) {
+	commenti := queryCommenti(pensieroID, viewer, 0)
 
 	hasMore := len(commenti) > commentPageSize
 	if hasMore {
@@ -168,8 +169,8 @@ func renderThreadCommenti(c *gin.Context, pensieroID, viewerID string) {
 
 // renderCommentiPiu carica una pagina successiva di commenti e rende
 // il partial "commenti-piu" (solo i nuovi item + eventuale nuovo bottone).
-func renderCommentiPiu(c *gin.Context, pensieroID, viewerID string, offset int) {
-	commenti := queryCommenti(pensieroID, viewerID, offset)
+func renderCommentiPiu(c *gin.Context, pensieroID string, viewer models.User, offset int) {
+	commenti := queryCommenti(pensieroID, viewer, offset)
 
 	hasMore := len(commenti) > commentPageSize
 	if hasMore {
@@ -184,17 +185,17 @@ func renderCommentiPiu(c *gin.Context, pensieroID, viewerID string, offset int) 
 	})
 }
 
-func queryCommenti(pensieroID, viewerID string, offset int) []models.Commento {
+func queryCommenti(pensieroID string, viewer models.User, offset int) []models.Commento {
 	rows, err := db.Pool.Query(context.Background(), `
 		SELECT cm.id, cm.author_id, u.username, COALESCE(u.avatar_url, ''), cm.content, cm.created_at,
-		       (cm.author_id = $2 OR p.author_id = $2) AS can_delete
+		       (cm.author_id = $2 OR p.author_id = $2 OR $5) AS can_delete
 		FROM commenti cm
 		JOIN users u ON u.id = cm.author_id
 		JOIN pensieri p ON p.id = cm.pensiero_id
 		WHERE cm.pensiero_id = $1
 		ORDER BY cm.created_at ASC
 		LIMIT $3 OFFSET $4
-	`, pensieroID, viewerID, commentPageSize+1, offset)
+	`, pensieroID, viewer.ID, commentPageSize+1, offset, viewer.IsAdmin)
 
 	var commenti []models.Commento
 	if err != nil {

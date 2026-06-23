@@ -39,6 +39,10 @@ type PensieroRisolto struct {
 	// DnaDone indica se il viewer corrente ha già lasciato il proprio DNA.
 	DnaCount int
 	DnaDone  bool
+
+	// CanModerate è true se il viewer corrente è un amministratore e può quindi
+	// eliminare il pensiero per moderare contenuti sensibili o vietati.
+	CanModerate bool
 }
 
 // Commento è un commento di un utente su un pensiero, già risolto per la vista

@@ -14,6 +14,7 @@ type User struct {
 	Presence     string    `db:"presence"`
 	Location     string    `db:"location"`
 	Website      string    `db:"website"`
+	IsAdmin      bool      `db:"is_admin"`
 	CreatedAt    time.Time `db:"created_at"`
 }
 
@@ -33,6 +34,7 @@ func UserColumns(prefix string) string {
 		"COALESCE(" + p + "presence, 'online'), " +
 		"COALESCE(" + p + "location, ''), " +
 		"COALESCE(" + p + "website, ''), " +
+		"COALESCE(" + p + "is_admin, FALSE), " +
 		p + "created_at"
 }
 
@@ -45,7 +47,7 @@ type scanner interface {
 func ScanUser(row scanner, u *User) error {
 	return row.Scan(
 		&u.ID, &u.Username, &u.Email, &u.Bio, &u.DisplayName,
-		&u.AvatarURL, &u.Status, &u.Presence, &u.Location, &u.Website, &u.CreatedAt,
+		&u.AvatarURL, &u.Status, &u.Presence, &u.Location, &u.Website, &u.IsAdmin, &u.CreatedAt,
 	)
 }
 
