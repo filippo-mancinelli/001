@@ -137,6 +137,29 @@ func GetProfile(c *gin.Context) {
 		}
 	}
 
+	// pensieri scritti SU questo profilo (dove è il subject), risolti per il
+	// viewer corrente con la logica di visibilità standard.
+	righeSu, _ := db.Pool.Query(context.Background(), `
+		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
+			`+colonneRisolte("$2")+`
+		FROM pensieri t
+		JOIN users u_a ON u_a.id = t.author_id
+		JOIN users u_s ON u_s.id = t.subject_id
+		WHERE t.subject_id = $1
+		ORDER BY t.updated_at DESC
+	`, profile.ID, user.ID)
+	defer righeSu.Close()
+
+	var pensieriSu []models.PensieroRisolto
+	for righeSu.Next() {
+		var rt models.PensieroRisolto
+		righeSu.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
+			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
+		if rt.Content != "" {
+			pensieriSu = append(pensieriSu, rt)
+		}
+	}
+
 	c.HTML(http.StatusOK, "profile.html", gin.H{
 		"User":           user,
 		"Profile":        profile,
@@ -147,6 +170,7 @@ func GetProfile(c *gin.Context) {
 		"FollowingCount": len(following),
 		"FollowersCount": len(followers),
 		"Pensieri":       pensieri,
+		"PensieriSu":     pensieriSu,
 	})
 }
 
