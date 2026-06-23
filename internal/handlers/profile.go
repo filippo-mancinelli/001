@@ -32,7 +32,7 @@ func GetFeed(c *gin.Context) {
 	for rows.Next() {
 		var rt models.PensieroRisolto
 		rows.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone)
+			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
 		if rt.Content != "" {
 			pensieri = append(pensieri, rt)
 		}
@@ -60,7 +60,7 @@ func GetFeed(c *gin.Context) {
 		for rows2.Next() {
 			var rt models.PensieroRisolto
 			rows2.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone)
+				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
 			if rt.Content != "" {
 				pubblici = append(pubblici, rt)
 			}
@@ -115,7 +115,10 @@ func GetProfile(c *gin.Context) {
 			(t.author_id = $2 OR `+isDiretta("$2")+`) AS is_direct,
 			(t.author_id <> $2 AND `+puoCurioso("$2")+`) AS can_send_curious,
 			`+curiosoInAttesa("$2")+` AS curious_pending,
-			`+contaCommenti()+` AS comment_count
+			`+contaCommenti()+` AS comment_count,
+			`+contaDna()+` AS dna_count,
+			`+dnaFatto("$2")+` AS dna_done,
+			t.created_at AS created_at
 		FROM pensieri t
 		JOIN users u_a ON u_a.id = t.author_id
 		JOIN users u_s ON u_s.id = t.subject_id
@@ -128,7 +131,7 @@ func GetProfile(c *gin.Context) {
 	for righe.Next() {
 		var rt models.PensieroRisolto
 		righe.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone)
+			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
 		if rt.Content != "" {
 			pensieri = append(pensieri, rt)
 		}

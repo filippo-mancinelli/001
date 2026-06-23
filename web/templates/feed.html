@@ -5,7 +5,7 @@
 {{template "nav" .}}
 <div class="container" style="padding-top:1rem">
   <div class="panel">
-    <div class="panel-title">// flusso recente</div>
+    <div class="panel-title">// pensieri recenti</div>
     {{if .Pensieri}}
       {{range .Pensieri}}
         {{template "pensiero-card" .}}
@@ -20,7 +20,7 @@
 
   {{if .Pubblici}}
   <div class="panel">
-    <div class="panel-title">// scoperta — pensieri pubblici</div>
+    <div class="panel-title">// pensieri pubblici</div>
     {{if not .Pensieri}}<div class="empty-hint" style="margin-bottom:0.85rem">non segui ancora nessuno — ecco cosa scrivono gli altri.</div>{{end}}
     {{range .Pubblici}}
       {{template "pensiero-card" .}}

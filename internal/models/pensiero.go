@@ -26,7 +26,8 @@ type PensieroRisolto struct {
 	SubjectID   string
 	SubjectName string
 	Content     string
-	IsDirect    bool // true se il viewer sta vedendo la versione diretta (audience=subject)
+	CreatedAt   time.Time // istante di creazione del pensiero
+	IsDirect    bool      // true se il viewer sta vedendo la versione diretta (audience=subject)
 
 	// stato richiesta "sono curioso" relativo al viewer corrente
 	CanSendCurious bool // il viewer può chiedere di vedere la versione diretta

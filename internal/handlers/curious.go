@@ -54,9 +54,9 @@ func PostCurious(c *gin.Context) {
 		<details class="attesa-tip">
 			<summary class="attesa-btn" aria-label="In attesa di rivelazione">
 				<svg class="attesa-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-					<path d="M6 2h12"/><path d="M6 22h12"/>
-					<path d="M7 2c0 4 3 5.5 5 7 2-1.5 5-3 5-7"/>
-					<path d="M7 22c0-4 3-5.5 5-7 2 1.5 5 3 5 7"/>
+					<path d="M8 6h6a4 4 0 0 1 0 8H9l-3 3v-3a4 4 0 0 1 2-8Z"/>
+					<circle cx="6" cy="20" r="1.2"/>
+					<circle cx="3" cy="22.5" r="0.8"/>
 				</svg>
 			</summary>
 			<span class="attesa-tooltip">in attesa di rivelazione...</span>
