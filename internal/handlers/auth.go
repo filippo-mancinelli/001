@@ -13,7 +13,7 @@ import (
 )
 
 func GetLogin(c *gin.Context) {
-	c.HTML(http.StatusOK, "login.html", gin.H{})
+	c.HTML(http.StatusOK, "login.html", gin.H{"googleEnabled": GoogleEnabled()})
 }
 
 func PostLogin(c *gin.Context) {
@@ -22,15 +22,21 @@ func PostLogin(c *gin.Context) {
 
 	var id, hash string
 	err := db.Pool.QueryRow(context.Background(),
-		`SELECT id, password_hash FROM users WHERE username = $1`, username,
+		`SELECT id, COALESCE(password_hash, '') FROM users WHERE username = $1`, username,
 	).Scan(&id, &hash)
 	if err != nil {
-		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "credenziali non valide"})
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "credenziali non valide", "googleEnabled": GoogleEnabled()})
+		return
+	}
+
+	// Account creato solo con Google: nessuna password locale.
+	if hash == "" {
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "questo account usa l'accesso con Google", "googleEnabled": GoogleEnabled()})
 		return
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) != nil {
-		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "credenziali non valide"})
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "credenziali non valide", "googleEnabled": GoogleEnabled()})
 		return
 	}
 
@@ -50,7 +56,7 @@ func PostLogin(c *gin.Context) {
 }
 
 func GetRegister(c *gin.Context) {
-	c.HTML(http.StatusOK, "register.html", gin.H{})
+	c.HTML(http.StatusOK, "register.html", gin.H{"googleEnabled": GoogleEnabled()})
 }
 
 func PostRegister(c *gin.Context) {

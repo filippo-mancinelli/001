@@ -27,6 +27,13 @@
       <button type="submit" class="btn" style="width:100%">[ accedi ]</button>
     </form>
 
+    {{if .googleEnabled}}
+    <div class="oauth-sep"><span>oppure</span></div>
+    <a href="/auth/google" class="btn btn-google" style="width:100%">
+      {{template "google_icon" .}}<span>accedi con Google</span>
+    </a>
+    {{end}}
+
     <div style="text-align:right; font-size:0.72rem; margin-top:0.5rem">
       <a href="/forgot">password dimenticata?</a>
     </div>

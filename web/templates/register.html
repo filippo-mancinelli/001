@@ -31,6 +31,13 @@
       <button type="submit" class="btn" style="width:100%">[ crea account ]</button>
     </form>
 
+    {{if .googleEnabled}}
+    <div class="oauth-sep"><span>oppure</span></div>
+    <a href="/auth/google" class="btn btn-google" style="width:100%">
+      {{template "google_icon" .}}<span>registrati con Google</span>
+    </a>
+    {{end}}
+
     <hr class="divider">
     <div style="text-align:center; font-size:0.75rem; color:var(--text-dim)">
       hai già un account? <a href="/login">accedi</a>

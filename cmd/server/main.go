@@ -119,6 +119,8 @@ func main() {
 	r.POST("/login", handlers.PostLogin)
 	r.GET("/register", handlers.GetRegister)
 	r.POST("/register", handlers.PostRegister)
+	r.GET("/auth/google", handlers.GetGoogleLogin)
+	r.GET("/auth/google/callback", handlers.GetGoogleCallback)
 	r.GET("/forgot", handlers.GetForgot)
 	r.POST("/forgot", handlers.PostForgot)
 	r.GET("/reset", handlers.GetReset)
