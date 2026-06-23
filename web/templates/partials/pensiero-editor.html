@@ -1,28 +1,38 @@
 {{define "pensiero-editor"}}
 <div class="panel" style="margin-top:0.5rem">
   <div class="panel-title">// scrivi un pensiero</div>
-  <form hx-post="/pensieri" hx-target="#pensiero-editor-area" hx-swap="innerHTML">
+  <form id="pensiero-form" hx-post="/pensieri" hx-target="#pensiero-editor-area" hx-swap="innerHTML">
     <div class="form-group">
       <label>su chi scrivi</label>
-      <select name="subject_id">
+      <select name="subject_id" required>
         {{range .Following}}
         <option value="{{.ID}}">@{{.Username}}</option>
         {{end}}
       </select>
     </div>
-    <div class="form-group">
-      <label>versione per (lascia vuoto = tutti)</label>
-      <select name="audience_id">
-        <option value="">— tutti gli altri —</option>
-        {{range .Following}}
-        <option value="{{.ID}}">@{{.Username}}</option>
-        {{end}}
-      </select>
+
+    <!-- switch tra la versione pubblica e quella personale -->
+    <div class="versione-switch" role="tablist">
+      <button type="button" class="versione-tab attiva" data-target="pubblica"
+        onclick="switchVersione(this, 'pubblica')">pubblica</button>
+      <button type="button" class="versione-tab" data-target="personale"
+        onclick="switchVersione(this, 'personale')">personale</button>
     </div>
-    <div class="form-group">
-      <label>pensiero</label>
-      <textarea name="content" rows="4" placeholder="cosa pensi di questa persona?"></textarea>
+
+    <div class="form-group versione-pannello" data-versione="pubblica">
+      <label>versione pubblica <span class="versione-hint">— la leggono tutti</span></label>
+      <textarea name="content_public" rows="4" placeholder="cosa pensi di questa persona?"></textarea>
     </div>
+
+    <div class="form-group versione-pannello hidden" data-versione="personale">
+      <label>versione personale <span class="versione-hint">— visibile solo a chi chiede "sono curioso"</span></label>
+      <textarea name="content_personal" rows="4" placeholder="la versione più sincera, quella che riveli solo a chi te la chiede..."></textarea>
+      <button type="button" class="btn btn-sm" style="margin-top:0.4rem"
+        onclick="copiaPubblica()">[ uguale alla versione pubblica ]</button>
+    </div>
+
+    <div class="versione-errore hidden"></div>
+
     <div style="display:flex; gap:0.5rem">
       <button type="submit" class="btn">[ salva ]</button>
       <button type="button" class="btn btn-red btn-sm"
@@ -32,4 +42,48 @@
     </div>
   </form>
 </div>
+<script>
+(function () {
+  var form = document.getElementById('pensiero-form');
+  if (!form || form.dataset.bound) return;
+  form.dataset.bound = '1';
+
+  window.switchVersione = function (btn, target) {
+    form.querySelectorAll('.versione-tab').forEach(function (t) {
+      t.classList.toggle('attiva', t.dataset.target === target);
+    });
+    form.querySelectorAll('.versione-pannello').forEach(function (p) {
+      p.classList.toggle('hidden', p.dataset.versione !== target);
+    });
+  };
+
+  window.copiaPubblica = function () {
+    form.querySelector('[name=content_personal]').value =
+      form.querySelector('[name=content_public]').value;
+  };
+
+  // Entrambe le versioni sono obbligatorie: blocchiamo l'invio HTMX se manca
+  // una delle due e portiamo l'utente sul pannello da completare.
+  form.addEventListener('htmx:beforeRequest', function (e) {
+    // ignora le richieste di altri elementi (es. il pulsante "annulla")
+    if (e.detail.elt !== form) return;
+    var pub = form.querySelector('[name=content_public]').value.trim();
+    var pers = form.querySelector('[name=content_personal]').value.trim();
+    var err = form.querySelector('.versione-errore');
+    if (pub && pers) {
+      err.classList.add('hidden');
+      return;
+    }
+    e.preventDefault();
+    err.classList.remove('hidden');
+    if (!pub) {
+      err.textContent = 'scrivi la versione pubblica.';
+      switchVersione(form.querySelector('[data-target=pubblica]'), 'pubblica');
+    } else {
+      err.textContent = 'scrivi anche la versione personale (oppure usa "uguale alla versione pubblica").';
+      switchVersione(form.querySelector('[data-target=personale]'), 'personale');
+    }
+  });
+})();
+</script>
 {{end}}
