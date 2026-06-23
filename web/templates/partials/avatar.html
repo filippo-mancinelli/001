@@ -3,7 +3,7 @@
   {{if .AvatarURL}}
   <img class="avatar" src="{{.AvatarURL}}" alt="@{{.Username}}" loading="lazy">
   {{else}}
-  <span class="avatar avatar-fallback" style="background:{{avatarColor .Username}}">{{initial .Username}}</span>
+  <span class="avatar avatar-identicon" aria-label="@{{.Username}}">{{identicon .Username}}</span>
   {{end}}
   {{if .Presence}}<span class="presence presence-{{.Presence}}" title="{{.Presence}}"></span>{{end}}
 </span>
