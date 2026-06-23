@@ -32,7 +32,7 @@ func GetFeed(c *gin.Context) {
 	for rows.Next() {
 		var rt models.PensieroRisolto
 		rows.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount)
+			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone)
 		if rt.Content != "" {
 			pensieri = append(pensieri, rt)
 		}
@@ -60,7 +60,7 @@ func GetFeed(c *gin.Context) {
 		for rows2.Next() {
 			var rt models.PensieroRisolto
 			rows2.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount)
+				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone)
 			if rt.Content != "" {
 				pubblici = append(pubblici, rt)
 			}
@@ -128,7 +128,7 @@ func GetProfile(c *gin.Context) {
 	for righe.Next() {
 		var rt models.PensieroRisolto
 		righe.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount)
+			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone)
 		if rt.Content != "" {
 			pensieri = append(pensieri, rt)
 		}

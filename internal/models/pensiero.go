@@ -33,6 +33,11 @@ type PensieroRisolto struct {
 	CuriousPending bool // il viewer ha una richiesta in attesa
 
 	CommentCount int // numero di commenti collegati al pensiero
+
+	// "DNA": il like del pensiero (doppia elica). DnaCount è il totale,
+	// DnaDone indica se il viewer corrente ha già lasciato il proprio DNA.
+	DnaCount int
+	DnaDone  bool
 }
 
 // Commento è un commento di un utente su un pensiero, già risolto per la vista
