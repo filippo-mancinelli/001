@@ -305,12 +305,13 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 .pensiero-card:hover { border-left-color: var(--blue); box-shadow: 0 3px 10px rgba(30,50,80,0.15); }
 
 .pensiero-meta {
-  font-size: 0.72rem; color: var(--text-dim);
+  font-size: 0.79rem; color: var(--text-dim);
   margin-bottom: 0.35rem; display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;
   padding-right: 1.8rem;
 }
 .pensiero-meta .author { color: var(--cyan); font-weight: 700; }
 .pensiero-meta .subject { color: var(--amber); font-weight: 700; }
+.pensiero-data { margin-left: auto; font-size: 0.64rem; color: var(--text-dim); opacity: 0.75; white-space: nowrap; }
 
 .pensiero-contenuto { line-height: 1.5; white-space: pre-wrap; word-break: break-word; font-size: 0.92rem; color: #333a43; }
 

@@ -74,8 +74,8 @@ func dnaFatto(viewer string) string {
 }
 
 // colonneRisolte assembla le colonne risolte (content, is_direct,
-// can_send_curious, curious_pending, comment_count, dna_count, dna_done) per un
-// viewer, nell'ordine atteso dallo scan dei PensieroRisolto.
+// can_send_curious, curious_pending, comment_count, dna_count, dna_done,
+// created_at) per un viewer, nell'ordine atteso dallo scan dei PensieroRisolto.
 func colonneRisolte(viewer string) string {
 	return resolviContenuto(viewer) + ` AS content,
 		` + isDiretta(viewer) + ` AS is_direct,
@@ -83,5 +83,6 @@ func colonneRisolte(viewer string) string {
 		` + curiosoInAttesa(viewer) + ` AS curious_pending,
 		` + contaCommenti() + ` AS comment_count,
 		` + contaDna() + ` AS dna_count,
-		` + dnaFatto(viewer) + ` AS dna_done`
+		` + dnaFatto(viewer) + ` AS dna_done,
+		t.created_at AS created_at`
 }
