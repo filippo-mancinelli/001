@@ -23,7 +23,7 @@
         <div class="profile-handle">@{{.Profile.Username}}</div>
       </div>
 
-      <form method="POST" action="/settings/profile" class="settings-form">
+      <form method="POST" action="/settings/profile" class="settings-form" enctype="multipart/form-data">
         <div class="form-group">
           <label>nome visualizzato</label>
           <input type="text" name="display_name" maxlength="64" value="{{.Profile.DisplayName}}" placeholder="@{{.Profile.Username}}">
@@ -51,9 +51,15 @@
         </div>
 
         <div class="form-group">
-          <label>immagine profilo (url)</label>
+          <label>immagine profilo (carica file)</label>
+          <input type="file" name="avatar_file" accept="image/jpeg,image/png,image/gif,image/webp">
+          <div class="form-hint">jpg, png, gif o webp, max 5 MB. sostituisce l'avatar attuale.</div>
+        </div>
+
+        <div class="form-group">
+          <label>oppure immagine profilo (url)</label>
           <input type="text" name="avatar_url" maxlength="255" value="{{.Profile.AvatarURL}}" placeholder="https://...">
-          <div class="form-hint">lascia vuoto per usare l'avatar generato dalle iniziali.</div>
+          <div class="form-hint">lascia vuoto per usare l'avatar generato dalle iniziali. caricando un file questo campo viene aggiornato in automatico.</div>
         </div>
 
         <div class="form-row">

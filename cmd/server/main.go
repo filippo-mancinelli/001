@@ -13,6 +13,7 @@ import (
 	"pensieri/internal/db"
 	"pensieri/internal/handlers"
 	"pensieri/internal/middleware"
+	"pensieri/internal/storage"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -114,6 +115,14 @@ func main() {
 	}
 	defer db.Pool.Close()
 
+	// Storage S3 per gli avatar caricati. Se AWS_S3_BUCKET_NAME non è impostata
+	// la feature resta disattivata e l'app funziona comunque (avatar generati).
+	if err := storage.Init(context.Background()); err != nil {
+		log.Printf("storage S3: %v", err)
+	} else if storage.Configured() {
+		log.Println("storage S3 attivo")
+	}
+
 	if err := runMigrations(); err != nil {
 		log.Fatalf("migrations: %v", err)
 	}
@@ -132,6 +141,9 @@ func main() {
 	r.GET("/manifest.webmanifest", handlers.GetManifest)
 	r.GET("/sw.js", handlers.GetServiceWorker)
 	r.GET("/install", handlers.GetInstall)
+
+	// proxy pubblico verso S3 per le immagini avatar caricate (bucket privato)
+	r.GET("/media/avatars/:name", handlers.GetAvatarMedia)
 
 	tmpl := template.Must(template.New("").Funcs(templateFuncs).ParseGlob("web/templates/*.html"))
 	tmpl = template.Must(tmpl.ParseGlob("web/templates/partials/*.html"))
