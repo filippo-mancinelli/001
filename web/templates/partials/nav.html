@@ -32,6 +32,10 @@
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>
         <span class="nav-lbl">installa</span>
       </a>
+      <button type="button" class="nav-act nav-help" data-help-open title="come funziona?" aria-label="come funziona?">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.3 9.2a2.8 2.8 0 0 1 5.3 1.1c0 1.9-2.8 2.4-2.8 4"/><circle cx="12" cy="17.2" r="0.7" fill="currentColor" stroke="none"/></svg>
+        <span class="nav-lbl">aiuto</span>
+      </button>
       <form method="POST" action="/logout" class="nav-logout">
         <button class="btn btn-sm btn-red nav-logout-btn" title="logout" aria-label="logout">
           <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="m14 8 4 4-4 4M18 12H9"/></svg>
@@ -42,6 +46,29 @@
     {{end}}
   </div>
 </header>
+{{if .User}}
+<!-- modal "come funziona?" — spiega la doppia visibilità dei pensieri -->
+<div class="help-modal" id="help-modal" hidden>
+  <div class="help-backdrop" data-help-close></div>
+  <div class="help-dialog" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="panel-title" id="help-title">
+      // come funziona?
+      <button type="button" class="help-close" data-help-close title="chiudi" aria-label="chiudi">×</button>
+    </div>
+    <div class="help-body">
+      <p>Qui scrivi cosa pensi di un'altra persona, e ogni pensiero ha <strong>due versioni</strong>:</p>
+      <ul>
+        <li><strong>pubblica</strong> — la leggono tutti.</li>
+        <li><strong>personale</strong> — più sincera, resta nascosta e la vede solo chi te la chiede col pulsante <em>“sono curioso”</em>.</li>
+      </ul>
+      <p>Così ognuno ha un lato visibile a tutti e uno che riveli solo a chi è davvero curioso.</p>
+    </div>
+    <div class="help-actions">
+      <button type="button" class="btn btn-cyan" data-help-close>ho capito</button>
+    </div>
+  </div>
+</div>
+{{end}}
 {{end}}
 
 {{define "statusbar"}}
