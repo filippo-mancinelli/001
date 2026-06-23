@@ -315,7 +315,8 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 
 .pensiero-contenuto { line-height: 1.5; white-space: pre-wrap; word-break: break-word; font-size: 0.92rem; color: #333a43; }
 
-.pensiero-azioni { margin-top: 0.5rem; display: flex; gap: 0.5rem; align-items: center; }
+.pensiero-footer { display: flex; align-items: center; margin-top: 0.45rem; }
+.pensiero-azioni { display: flex; gap: 0.5rem; align-items: center; }
 .btn-curioso { padding-top: 0.12rem; padding-bottom: 0.12rem; }
 
 .badge-direct {
@@ -328,7 +329,7 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 }
 
 /* ===== DNA (il "like" dei pensieri) ===== */
-.pensiero-reazioni { margin-top: 0.4rem; display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; }
+.pensiero-reazioni { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
 
 .dna-btn {
   display: inline-flex; align-items: center; gap: 0.3rem;

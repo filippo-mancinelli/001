@@ -38,19 +38,21 @@
     <span class="pensiero-data">{{.CreatedAt.Format "02/01/2006 15:04"}}</span>
   </div>
   <div class="pensiero-contenuto">{{.Content}}</div>
-  {{if .CanSendCurious}}
-  <div class="pensiero-azioni">
-    <button class="btn btn-amber btn-sm btn-curioso"
-      hx-post="/curious/{{.PensieroID}}"
-      hx-target="closest .pensiero-azioni"
-      hx-swap="outerHTML"
-      hx-disabled-elt="this">
-      [ sono curioso ]
-    </button>
-  </div>
-  {{end}}
-  <div class="pensiero-reazioni">
-    {{template "dna-button" .}}
+  <div class="pensiero-footer">
+    {{if .CanSendCurious}}
+    <div class="pensiero-azioni">
+      <button class="btn btn-amber btn-sm btn-curioso"
+        hx-post="/curious/{{.PensieroID}}"
+        hx-target="closest .pensiero-azioni"
+        hx-swap="outerHTML"
+        hx-disabled-elt="this">
+        [ sono curioso ]
+      </button>
+    </div>
+    {{end}}
+    <div class="pensiero-reazioni">
+      {{template "dna-button" .}}
+    </div>
   </div>
   <div class="pensiero-commenti" id="commenti-{{.PensieroID}}">
     <button class="commenti-toggle"
