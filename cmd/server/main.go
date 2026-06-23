@@ -207,6 +207,16 @@ func main() {
 		auth.POST("/curious/:id/reject", handlers.PostCuriousReject)
 	}
 
+	// Pagina di amministrazione "segreta": non linkata da nessuna parte e
+	// protetta da AdminOnly (404 per i non-admin). Permette di vedere l'elenco
+	// utenti ed eliminarli con tutti i dati collegati (utile per ripulire i dati
+	// di test). Montata sotto auth così eredita l'autenticazione.
+	admin := auth.Group("/admin", middleware.AdminOnly())
+	{
+		admin.GET("", handlers.GetAdmin)
+		admin.DELETE("/users/:id", handlers.DeleteUser)
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

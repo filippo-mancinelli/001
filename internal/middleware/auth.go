@@ -52,6 +52,22 @@ func redirectGuest(c *gin.Context, dest string) {
 	c.Abort()
 }
 
+// AdminOnly va montato DOPO Auth(): richiede una sessione valida il cui utente
+// abbia is_admin = true, altrimenti risponde 404 per non rivelare l'esistenza
+// delle rotte amministrative (la pagina admin è "segreta": non linkata e
+// indistinguibile da un percorso inesistente per chi non è admin).
+func AdminOnly() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		v, ok := c.Get("user")
+		if u, isUser := v.(models.User); !ok || !isUser || !u.IsAdmin {
+			c.Status(http.StatusNotFound)
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
 func OptionalAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie("session_token")

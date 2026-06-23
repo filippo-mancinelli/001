@@ -70,6 +70,22 @@ func Upload(ctx context.Context, key, contentType string, body io.Reader) error 
 	return err
 }
 
+// Delete rimuove un oggetto dal bucket. S3 non considera errore la cancellazione
+// di una chiave inesistente, quindi è sicuro chiamarla anche se il file è già
+// stato rimosso (operazione idempotente).
+func Delete(ctx context.Context, key string) error {
+	if !Configured() {
+		return errors.New("storage S3 non configurato")
+	}
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	_, err := client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+	return err
+}
+
 // Object rappresenta un oggetto scaricato da S3: il corpo (da chiudere a cura
 // del chiamante) e il content-type salvato all'upload.
 type Object struct {
