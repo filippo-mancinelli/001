@@ -4,6 +4,14 @@
 <body>
 {{template "nav" .}}
 <div class="container" style="padding-top:1rem">
+  <div class="panel help-banner" id="help-banner" hidden>
+    <div class="panel-title">// prima volta qui?</div>
+    <p class="help-banner-text">
+      I pensieri hanno una versione <strong>pubblica</strong> e una <strong>personale</strong>.
+      <button type="button" class="help-banner-link" data-help-open>come funziona?</button>
+    </p>
+  </div>
+
   <div class="panel">
     <div class="panel-title">// pensieri recenti</div>
     {{if .Pensieri}}

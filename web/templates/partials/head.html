@@ -64,6 +64,38 @@
     }
   });
 
+  // modal "come funziona?": apertura dal banner del feed o dal pulsante "?"
+  // in alto a destra. Una volta aperto, ricordiamo la cosa e togliamo il
+  // banner dal feed (resta sempre disponibile il pulsante "?" nella nav).
+  (function () {
+    var KEY = 'pensieri_help_seen';
+    function seen() { try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; } }
+    function markSeen() { try { localStorage.setItem(KEY, '1'); } catch (e) {} }
+    function byId(id) { return document.getElementById(id); }
+    function openHelp() {
+      var m = byId('help-modal');
+      if (m) { m.hidden = false; document.body.classList.add('help-open'); }
+      markSeen();
+      var b = byId('help-banner');
+      if (b) b.hidden = true;
+    }
+    function closeHelp() {
+      var m = byId('help-modal');
+      if (m) { m.hidden = true; document.body.classList.remove('help-open'); }
+    }
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-help-open]')) { e.preventDefault(); openHelp(); }
+      else if (e.target.closest('[data-help-close]')) { e.preventDefault(); closeHelp(); }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeHelp();
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+      var b = byId('help-banner');
+      if (b && !seen()) b.hidden = false;
+    });
+  })();
+
   // evidenzia la voce di navigazione corrispondente alla pagina attiva
   document.addEventListener('DOMContentLoaded', function () {
     var here = location.pathname;
