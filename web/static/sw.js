@@ -4,7 +4,7 @@
 // servire contenuti stantii o di un altro utente). Mettiamo in cache solo gli
 // asset statici e mostriamo una pagina di fallback quando si è offline.
 
-const CACHE = 'pensieri-v2';
+const CACHE = 'pensieri-v3';
 
 // asset "shell" precaricati all'installazione
 const PRECACHE = [
