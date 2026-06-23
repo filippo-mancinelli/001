@@ -24,8 +24,7 @@ var (
 	swBody string
 )
 
-// loadServiceWorker legge sw.js una sola volta e inietta la versione degli
-// asset al posto del placeholder __ASSET_VERSION__.
+// loadServiceWorker legge sw.js una volta e inietta la versione degli asset.
 func loadServiceWorker() string {
 	swOnce.Do(func() {
 		b, err := os.ReadFile("web/static/sw.js")
@@ -38,13 +37,10 @@ func loadServiceWorker() string {
 	return swBody
 }
 
-// GetServiceWorker serve il service worker dalla radice, in modo che possa
-// controllare l'intero sito (scope "/"). La versione degli asset viene iniettata
-// nel corpo così che cache name e precache cambino a ogni modifica di CSS/JS.
+// GetServiceWorker serve il service worker dalla radice (scope "/").
 func GetServiceWorker(c *gin.Context) {
 	c.Header("Content-Type", "application/javascript; charset=utf-8")
 	c.Header("Service-Worker-Allowed", "/")
-	// niente cache aggressiva: vogliamo poter aggiornare il SW rapidamente
 	c.Header("Cache-Control", "no-cache")
 	c.String(http.StatusOK, loadServiceWorker())
 }

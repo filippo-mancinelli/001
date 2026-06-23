@@ -4,14 +4,11 @@
 // servire contenuti stantii o di un altro utente). Mettiamo in cache solo gli
 // asset statici e mostriamo una pagina di fallback quando si è offline.
 
-// La versione viene iniettata dal server (hash del contenuto degli asset):
-// cambia a ogni modifica di CSS/JS, invalidando automaticamente la cache.
+// VERSION iniettata dal server (hash degli asset): invalida la cache a ogni modifica
 const VERSION = '__ASSET_VERSION__';
 const CACHE = 'pensieri-' + VERSION;
 
-// asset "shell" precaricati all'installazione. CSS e JS usano l'URL versionato,
-// identico a quello referenziato nell'HTML, così la cache-first serve sempre la
-// versione corrente.
+// asset shell precaricati; CSS/JS con URL versionato identico all'HTML
 const PRECACHE = [
   '/static/css/retro.css?v=' + VERSION,
   '/static/js/htmx.min.js?v=' + VERSION,
@@ -43,11 +40,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // asset statici: cache-first. Gli URL sono versionati (?v=hash) quindi
-  // immutabili: un contenuto nuovo ha un URL nuovo che manca in cache e viene
-  // riscaricato. Su miss + rete assente ricadiamo sull'eventuale copia in cache
-  // ignorando la query (utile per la pagina offline che referenzia il CSS senza
-  // versione).
+  // asset statici: cache-first su URL versionati; offline ricade su ignoreSearch
   if (url.pathname.startsWith('/static/') || url.pathname === '/manifest.webmanifest') {
     event.respondWith(
       caches.match(req).then((cached) =>
