@@ -91,6 +91,20 @@
       </button>
     </div>
     {{end}}
+    <div class="pensiero-reazioni">
+      {{template "dna-button" .}}
+    </div>
+  </div>
+  <div class="commenti-barra">
+    <div class="pensiero-commenti" id="commenti-{{.PensieroID}}">
+      <button class="commenti-toggle"
+        hx-get="/pensieri/{{.PensieroID}}/commenti"
+        hx-target="#commenti-{{.PensieroID}}"
+        hx-swap="innerHTML">
+        <svg class="commenti-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-4 4v-4H4z"/></svg>
+        <span>[ commenti{{if .CommentCount}} ({{.CommentCount}}){{end}} ]</span>
+      </button>
+    </div>
     <button type="button" class="pensiero-share-btn"
       title="condividi pensiero" aria-label="condividi pensiero"
       onclick="openPensieroShare('{{.PensieroID}}', '{{.AuthorName}}', '{{.SubjectName}}')">
@@ -98,19 +112,6 @@
         <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
         <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>
       </svg>
-      <span>[ condividi ]</span>
-    </button>
-    <div class="pensiero-reazioni">
-      {{template "dna-button" .}}
-    </div>
-  </div>
-  <div class="pensiero-commenti" id="commenti-{{.PensieroID}}">
-    <button class="commenti-toggle"
-      hx-get="/pensieri/{{.PensieroID}}/commenti"
-      hx-target="#commenti-{{.PensieroID}}"
-      hx-swap="innerHTML">
-      <svg class="commenti-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-4 4v-4H4z"/></svg>
-      <span>[ commenti{{if .CommentCount}} ({{.CommentCount}}){{end}} ]</span>
     </button>
   </div>
 </div>
