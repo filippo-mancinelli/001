@@ -492,7 +492,10 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 
 .user-mini-inner {
   display: flex; gap: 0.55rem; align-items: center;
+  text-decoration: none; color: inherit;
 }
+.user-mini-inner:hover .user-mini-handle { text-decoration: underline; }
+.user-mini-inner:hover .user-mini-icon svg { border-color: var(--cyan); }
 
 .user-mini-icon svg {
   width: 40px; height: 40px;

@@ -1,5 +1,5 @@
 {{define "user-mini-card"}}
-<div class="user-mini-inner">
+<a class="user-mini-inner" href="/@{{.Username}}">
   <div class="user-mini-icon">{{identicon .Username}}</div>
   <div class="user-mini-info">
     {{if .DisplayName}}
@@ -7,5 +7,5 @@
     {{end}}
     <div class="user-mini-handle">@{{.Username}}</div>
   </div>
-</div>
+</a>
 {{end}}
