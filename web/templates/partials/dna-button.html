@@ -1,4 +1,9 @@
 {{define "dna-button"}}
+{{if .Anon}}
+<a class="dna-btn" href="/register" title="registrati per lasciare il tuo DNA" aria-label="registrati per lasciare il tuo DNA">
+  {{template "dna-icon" .}}
+</a>
+{{else}}
 <button class="dna-btn{{if .DnaDone}} dna-on{{end}}"
   hx-post="/dna/{{.PensieroID}}"
   hx-target="this"
@@ -7,6 +12,12 @@
   title="DNA"
   aria-label="DNA"
   aria-pressed="{{if .DnaDone}}true{{else}}false{{end}}">
+  {{template "dna-icon" .}}
+</button>
+{{end}}
+{{end}}
+
+{{define "dna-icon"}}
   <span class="dna-ico">
     <svg viewBox="0 0 48 48" width="15" height="15" aria-hidden="true" focusable="false">
       <path fill="#AD1457" d="M36,4c0,9.3-6,13.2-12.8,17.8C16.1,26.5,8,31.8,8,44h4c0-10.1,6.5-14.4,13.4-18.9C32.2,20.6,40,15.4,40,4H36z"/>
@@ -22,5 +33,4 @@
     </svg>
   </span>
   {{if .DnaCount}}<span class="dna-count">{{.DnaCount}}</span>{{end}}
-</button>
 {{end}}

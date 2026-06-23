@@ -10,36 +10,41 @@ import (
 )
 
 func GetFeed(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user, auth := currentViewer(c)
 
-	rows, err := db.Pool.Query(context.Background(), `
-		SELECT DISTINCT ON (t.id)
-			t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
-			`+colonneRisolte("$1")+`
-		FROM pensieri t
-		JOIN follows f ON f.following_id = t.author_id AND f.follower_id = $1
-		JOIN users u_a ON u_a.id = t.author_id
-		JOIN users u_s ON u_s.id = t.subject_id
-		ORDER BY t.id, t.updated_at DESC
-	`, user.ID)
-	if err != nil {
-		c.HTML(http.StatusInternalServerError, "feed.html", gin.H{"User": user})
-		return
-	}
-	defer rows.Close()
-
+	// Feed personalizzato (pensieri di chi si segue): solo per utenti autenticati.
 	var pensieri []models.PensieroRisolto
-	for rows.Next() {
-		var rt models.PensieroRisolto
-		rows.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
-		rt.CanModerate = user.IsAdmin
-		if rt.Content != "" {
-			pensieri = append(pensieri, rt)
+	if auth {
+		rows, err := db.Pool.Query(context.Background(), `
+			SELECT DISTINCT ON (t.id)
+				t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
+				`+colonneRisolte("$1")+`
+			FROM pensieri t
+			JOIN follows f ON f.following_id = t.author_id AND f.follower_id = $1
+			JOIN users u_a ON u_a.id = t.author_id
+			JOIN users u_s ON u_s.id = t.subject_id
+			ORDER BY t.id, t.updated_at DESC
+		`, user.ID)
+		if err != nil {
+			c.HTML(http.StatusInternalServerError, "feed.html", gin.H{"User": user})
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			var rt models.PensieroRisolto
+			rows.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
+				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
+			rt.CanModerate = user.IsAdmin
+			if rt.Content != "" {
+				pensieri = append(pensieri, rt)
+			}
 		}
 	}
 
-	// pensieri pubblici recenti da utenti non seguiti (sezione scoperta)
+	// pensieri pubblici recenti da utenti non seguiti (sezione scoperta).
+	// Per i visitatori anonimi (viewer = anonViewerID) NOT EXISTS sui follow è
+	// sempre vero, quindi mostra tutti i pensieri pubblici recenti.
 	var pubblici []models.PensieroRisolto
 	rows2, err2 := db.Pool.Query(context.Background(), `
 		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
@@ -63,17 +68,28 @@ func GetFeed(c *gin.Context) {
 			rows2.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
 				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
 			rt.CanModerate = user.IsAdmin
+			rt.Anon = !auth
 			if rt.Content != "" {
 				pubblici = append(pubblici, rt)
 			}
 		}
 	}
 
-	c.HTML(http.StatusOK, "feed.html", gin.H{"User": user, "Pensieri": pensieri, "Pubblici": pubblici})
+	c.HTML(http.StatusOK, "feed.html", gin.H{"User": viewerForTemplate(user, auth), "Pensieri": pensieri, "Pubblici": pubblici})
+}
+
+// viewerForTemplate restituisce l'utente da passare ai template come ".User":
+// l'utente reale se autenticato, altrimenti nil così i template possono
+// distinguere i visitatori anonimi con un semplice {{if .User}}.
+func viewerForTemplate(user models.User, auth bool) any {
+	if auth {
+		return user
+	}
+	return nil
 }
 
 func GetProfile(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user, auth := currentViewer(c)
 	username := c.Param("username")
 
 	var profile models.User
@@ -84,10 +100,10 @@ func GetProfile(c *gin.Context) {
 		return
 	}
 
-	isSelf := profile.ID == user.ID
+	isSelf := auth && profile.ID == user.ID
 
 	var isFollowing bool
-	if !isSelf {
+	if auth && !isSelf {
 		db.Pool.QueryRow(context.Background(),
 			`SELECT EXISTS(SELECT 1 FROM follows WHERE follower_id=$1 AND following_id=$2)`,
 			user.ID, profile.ID,
@@ -135,6 +151,7 @@ func GetProfile(c *gin.Context) {
 		righe.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
 			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
 		rt.CanModerate = user.IsAdmin
+		rt.Anon = !auth
 		if rt.Content != "" {
 			pensieri = append(pensieri, rt)
 		}
@@ -158,13 +175,15 @@ func GetProfile(c *gin.Context) {
 		var rt models.PensieroRisolto
 		righeSu.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
 			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt)
+		rt.CanModerate = user.IsAdmin
+		rt.Anon = !auth
 		if rt.Content != "" {
 			pensieriSu = append(pensieriSu, rt)
 		}
 	}
 
 	c.HTML(http.StatusOK, "profile.html", gin.H{
-		"User":           user,
+		"User":           viewerForTemplate(user, auth),
 		"Profile":        profile,
 		"IsSelf":         isSelf,
 		"IsFollowing":    isFollowing,

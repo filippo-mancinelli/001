@@ -4,6 +4,19 @@
 <body>
 {{template "nav" .}}
 <div class="container" style="padding-top:1rem">
+  {{if not .User}}
+  <div class="panel">
+    <div class="panel-title">// pensieri</div>
+    <div class="guest-cta">
+      <p>una rete di pensieri scritti dalle persone, su altre persone.</p>
+      <p class="empty-hint">stai esplorando come ospite: puoi leggere i pensieri pubblici e i profili. registrati per scrivere, seguire e interagire.</p>
+      <div class="guest-cta-actions">
+        <a href="/register" class="btn btn-cyan btn-sm">[ registrati ]</a>
+        <a href="/login" class="btn btn-sm">[ accedi ]</a>
+      </div>
+    </div>
+  </div>
+  {{else}}
   <div class="panel">
     <div class="panel-title">// pensieri recenti</div>
     {{if .Pensieri}}
@@ -17,17 +30,19 @@
     </div>
     {{end}}
   </div>
+  {{end}}
 
   {{if .Pubblici}}
   <div class="panel">
     <div class="panel-title">// pensieri pubblici</div>
-    {{if not .Pensieri}}<div class="empty-hint" style="margin-bottom:0.85rem">non segui ancora nessuno — ecco cosa scrivono gli altri.</div>{{end}}
+    {{if and .User (not .Pensieri)}}<div class="empty-hint" style="margin-bottom:0.85rem">non segui ancora nessuno — ecco cosa scrivono gli altri.</div>{{end}}
     {{range .Pubblici}}
       {{template "pensiero-card" .}}
     {{end}}
   </div>
   {{end}}
 
+  {{if .User}}
   <div class="panel">
     <div class="panel-title">// trova utenti</div>
     <form method="GET" action="/search" style="display:flex; gap:0.5rem">
@@ -35,6 +50,7 @@
       <button class="btn btn-cyan">cerca</button>
     </form>
   </div>
+  {{end}}
 </div>
 {{template "statusbar" .}}
 </body>

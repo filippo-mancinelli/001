@@ -1,5 +1,28 @@
 package handlers
 
+import (
+	"pensieri/internal/models"
+
+	"github.com/gin-gonic/gin"
+)
+
+// anonViewerID è l'UUID "nullo" usato come viewer per i visitatori non
+// autenticati: è un UUID valido (le query non vanno in errore) ma non
+// corrisponde a nessun utente reale, quindi le regole di visibilità risolvono
+// sempre la versione pubblica (audience_id IS NULL) e non mostrano mai versioni
+// personali o azioni riservate.
+const anonViewerID = "00000000-0000-0000-0000-000000000000"
+
+// currentViewer restituisce l'utente loggato (se presente) e un flag che indica
+// se la richiesta è autenticata. Per i visitatori anonimi ritorna un User con ID
+// uguale ad anonViewerID, così i frammenti SQL di risoluzione restano validi.
+func currentViewer(c *gin.Context) (models.User, bool) {
+	if v, ok := c.Get("user"); ok {
+		return v.(models.User), true
+	}
+	return models.User{ID: anonViewerID}, false
+}
+
 // Questo file contiene i frammenti SQL condivisi che risolvono un pensiero per
 // uno specifico viewer. Il viewer è passato come placeholder posizionale
 // (es. "$1" nel feed, "$2" nella pagina profilo) così le query possono

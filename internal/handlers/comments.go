@@ -19,7 +19,7 @@ const commentPageSize = 20
 // usato per espandere i commenti sotto la card via HTMX.
 // Con ?offset=N restituisce solo i commenti aggiuntivi (paginazione "load more").
 func GetCommenti(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user, auth := currentViewer(c)
 	pensieroID := c.Param("id")
 
 	if !pensieroEsiste(pensieroID) {
@@ -37,7 +37,7 @@ func GetCommenti(c *gin.Context) {
 	if offset > 0 {
 		renderCommentiPiu(c, pensieroID, user, offset)
 	} else {
-		renderThreadCommenti(c, pensieroID, user)
+		renderThreadCommenti(c, pensieroID, user, !auth)
 	}
 }
 
@@ -109,7 +109,7 @@ func PostCommento(c *gin.Context) {
 		})
 	}
 
-	renderThreadCommenti(c, pensieroID, user)
+	renderThreadCommenti(c, pensieroID, user, false)
 }
 
 // DeleteCommento elimina un commento. È consentito all'autore del commento,
@@ -138,7 +138,7 @@ func DeleteCommento(c *gin.Context) {
 
 	db.Pool.Exec(context.Background(), `DELETE FROM commenti WHERE id = $1`, commentoID)
 
-	renderThreadCommenti(c, pensieroID, user)
+	renderThreadCommenti(c, pensieroID, user, false)
 }
 
 // pensieroEsiste verifica la presenza di un pensiero per id.
@@ -151,7 +151,7 @@ func pensieroEsiste(pensieroID string) bool {
 
 // renderThreadCommenti carica i primi commentPageSize commenti e rende il
 // partial "commenti-thread" con eventuale pulsante "carica altri".
-func renderThreadCommenti(c *gin.Context, pensieroID string, viewer models.User) {
+func renderThreadCommenti(c *gin.Context, pensieroID string, viewer models.User, anon bool) {
 	commenti := queryCommenti(pensieroID, viewer, 0)
 
 	hasMore := len(commenti) > commentPageSize
@@ -164,6 +164,7 @@ func renderThreadCommenti(c *gin.Context, pensieroID string, viewer models.User)
 		"Commenti":   commenti,
 		"HasMore":    hasMore,
 		"NextOffset": commentPageSize,
+		"Anon":       anon,
 	})
 }
 

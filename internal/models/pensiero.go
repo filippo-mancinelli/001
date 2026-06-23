@@ -43,6 +43,11 @@ type PensieroRisolto struct {
 	// CanModerate è true se il viewer corrente è un amministratore e può quindi
 	// eliminare il pensiero per moderare contenuti sensibili o vietati.
 	CanModerate bool
+
+	// Anon è true se il pensiero è mostrato a un visitatore non autenticato:
+	// le azioni che richiedono un account (DNA, "sono curioso", commenti) vengono
+	// sostituite da un invito a registrarsi.
+	Anon bool
 }
 
 // Commento è un commento di un utente su un pensiero, già risolto per la vista

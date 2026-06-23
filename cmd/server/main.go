@@ -148,11 +148,21 @@ func main() {
 	r.GET("/reset", handlers.GetReset)
 	r.POST("/reset", handlers.PostReset)
 
+	// pagine pubbliche: feed (pensieri pubblici), profili e lettura commenti
+	// sono visibili anche senza login. OptionalAuth popola l'utente se la
+	// sessione è valida, altrimenti prosegue come visitatore anonimo.
+	pub := r.Group("/", middleware.OptionalAuth())
+	{
+		pub.GET("/", handlers.GetFeed)
+		pub.GET("/@:username", handlers.GetProfile)
+		pub.GET("/pensieri/:id/commenti", handlers.GetCommenti)
+		pub.GET("/pensieri/:id/commenti/chiudi", handlers.GetCommentiChiudi)
+		pub.GET("/users/:username/mini", handlers.GetUserMini)
+	}
+
 	auth := r.Group("/", middleware.Auth())
 	{
 		auth.POST("/logout", handlers.PostLogout)
-		auth.GET("/", handlers.GetFeed)
-		auth.GET("/@:username", handlers.GetProfile)
 		auth.GET("/settings", handlers.GetSettings)
 		auth.POST("/settings/profile", handlers.PostProfileSettings)
 		auth.POST("/settings/account", handlers.PostAccountSettings)
@@ -174,12 +184,8 @@ func main() {
 		// moderazione: solo gli admin possono eliminare un intero pensiero
 		auth.DELETE("/pensieri/:id", handlers.DeletePensiero)
 
-		auth.GET("/pensieri/:id/commenti", handlers.GetCommenti)
-		auth.GET("/pensieri/:id/commenti/chiudi", handlers.GetCommentiChiudi)
 		auth.POST("/pensieri/:id/commenti", handlers.PostCommento)
 		auth.DELETE("/commenti/:id", handlers.DeleteCommento)
-
-		auth.GET("/users/:username/mini", handlers.GetUserMini)
 
 		auth.POST("/dna/:id", handlers.PostDna)
 

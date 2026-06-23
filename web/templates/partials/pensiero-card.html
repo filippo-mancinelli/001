@@ -46,7 +46,7 @@
   </div>
   <div class="pensiero-contenuto">{{.Content}}</div>
   <div class="pensiero-footer">
-    {{if .CanSendCurious}}
+    {{if and .CanSendCurious (not .Anon)}}
     <div class="pensiero-azioni">
       <button class="btn btn-amber btn-sm btn-curioso"
         hx-post="/curious/{{.PensieroID}}"
