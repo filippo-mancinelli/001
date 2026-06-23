@@ -55,6 +55,15 @@
     });
   })();
 
+  // chiude i tooltip utente (<details class="user-tooltip">) quando si
+  // clicca/tocca in un punto qualsiasi al di fuori del tooltip aperto
+  document.addEventListener('click', function (e) {
+    var open = document.querySelectorAll('details.user-tooltip[open]');
+    for (var i = 0; i < open.length; i++) {
+      if (!open[i].contains(e.target)) open[i].removeAttribute('open');
+    }
+  });
+
   // evidenzia la voce di navigazione corrispondente alla pagina attiva
   document.addEventListener('DOMContentLoaded', function () {
     var here = location.pathname;
