@@ -186,6 +186,7 @@ func main() {
 		auth.GET("/notifications", handlers.GetNotifications)
 		auth.GET("/notifications/count", handlers.GetNotificationsCount)
 		auth.GET("/network", handlers.GetNetwork)
+		auth.POST("/presence/ping", handlers.PostPresencePing)
 
 		auth.POST("/pensieri", handlers.PostPensiero)
 		auth.GET("/pensieri/nuovo", handlers.GetEditorPensiero)

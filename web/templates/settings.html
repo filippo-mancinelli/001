@@ -29,20 +29,10 @@
           <input type="text" name="display_name" maxlength="64" value="{{.Profile.DisplayName}}" placeholder="@{{.Profile.Username}}">
         </div>
 
-        <div class="form-row">
-          <div class="form-group" style="flex:1">
-            <label>stato</label>
-            <select name="presence">
-              <option value="online"  {{if eq .Profile.Presence "online"}}selected{{end}}>online</option>
-              <option value="away"    {{if eq .Profile.Presence "away"}}selected{{end}}>assente</option>
-              <option value="busy"    {{if eq .Profile.Presence "busy"}}selected{{end}}>occupato</option>
-              <option value="offline" {{if eq .Profile.Presence "offline"}}selected{{end}}>invisibile</option>
-            </select>
-          </div>
-          <div class="form-group" style="flex:2">
-            <label>messaggio di stato</label>
-            <input type="text" name="status" maxlength="140" value="{{.Profile.Status}}" placeholder="a cosa stai pensando?">
-          </div>
+        <div class="form-group">
+          <label>messaggio di stato</label>
+          <input type="text" name="status" maxlength="140" value="{{.Profile.Status}}" placeholder="a cosa stai pensando?">
+          <span class="form-hint">il tuo stato online/offline è automatico: sei “online” mentre l'app è aperta e torni “offline” quando la chiudi o esci.</span>
         </div>
 
         <div class="form-group">

@@ -22,6 +22,9 @@
         <span class="nav-lbl">notifiche</span>
         <span class="notif-count-slot" hx-get="/notifications/count" hx-trigger="load, every 30s" hx-swap="innerHTML"></span>
       </a>
+      <!-- heartbeat di presenza: tiene l'utente "online" finché l'app/tab è
+           aperta. Alla chiusura i battiti cessano e lo stato torna offline. -->
+      <span hx-post="/presence/ping" hx-trigger="load, every 30s" hx-swap="none" hidden aria-hidden="true"></span>
       <a href="/@{{.User.Username}}" class="nav-item nav-item-me">
         <span class="nav-avatar">{{template "avatar" .User}}</span>
         <span class="nav-lbl">profilo</span>

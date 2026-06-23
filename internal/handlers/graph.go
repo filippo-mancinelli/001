@@ -39,7 +39,7 @@ func GetNetwork(c *gin.Context) {
 			UNION
 			SELECT follower_id  FROM follows WHERE following_id = $1
 		)
-		SELECT u.id, u.username, COALESCE(u.presence, 'online')
+		SELECT u.id, u.username, `+models.PresenceExpr("u")+`
 		FROM network n
 		JOIN users u ON u.id = n.id
 		ORDER BY u.username

@@ -15,10 +15,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var allowedPresence = map[string]bool{
-	"online": true, "away": true, "busy": true, "offline": true,
-}
-
 // avatarExt mappa i content-type immagine ammessi per l'avatar all'estensione
 // del file. Limita gli upload ai formati immagine sicuri e ampiamente supportati.
 var avatarExt = map[string]string{
@@ -53,11 +49,6 @@ func PostProfileSettings(c *gin.Context) {
 	avatarURL := strings.TrimSpace(c.PostForm("avatar_url"))
 	location := truncate(strings.TrimSpace(c.PostForm("location")), 120)
 	website := truncate(strings.TrimSpace(c.PostForm("website")), 255)
-	presence := strings.TrimSpace(c.PostForm("presence"))
-
-	if !allowedPresence[presence] {
-		presence = "online"
-	}
 
 	// Se è stato caricato un file immagine, ha la precedenza sul campo URL:
 	// viene caricato su S3 e l'avatar punta al proxy /media/avatars/<file>.
@@ -81,10 +72,9 @@ func PostProfileSettings(c *gin.Context) {
 			bio          = NULLIF($3, ''),
 			avatar_url   = NULLIF($4, ''),
 			location     = NULLIF($5, ''),
-			website      = NULLIF($6, ''),
-			presence     = $7
-		WHERE id = $8
-	`, displayName, status, bio, avatarURL, location, website, presence, user.ID)
+			website      = NULLIF($6, '')
+		WHERE id = $7
+	`, displayName, status, bio, avatarURL, location, website, user.ID)
 	if err != nil {
 		redirectSettings(c, "", "errore-salvataggio")
 		return
