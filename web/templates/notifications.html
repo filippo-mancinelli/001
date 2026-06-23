@@ -9,8 +9,8 @@
     {{if .Notifications}}
       {{range .Notifications}}
       <div class="notif-row {{if not .Read}}unread{{end}}">
-        <span class="notif-type">{{.Type}}</span>
-        <span>{{.Message}}</span>
+        <span class="notif-type" data-type="{{.Type}}">{{.Type}}</span>
+        <span>{{.MessageHTML}}</span>
         {{if .Actions}}
         <div class="notif-actions" style="margin-left:auto; display:flex; gap:0.5rem">
           {{range .Actions}}

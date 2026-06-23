@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"pensieri/internal/db"
 	"pensieri/internal/models"
@@ -13,8 +14,9 @@ import (
 
 type notifView struct {
 	models.Notification
-	Message string
-	Actions []notifAction
+	Message     string
+	MessageHTML template.HTML
+	Actions     []notifAction
 }
 
 type notifAction struct {
@@ -68,26 +70,33 @@ func GetNotifications(c *gin.Context) {
 		var p map[string]string
 		json.Unmarshal(n.Payload, &p)
 
+		mention := func(u string) string {
+			return `<span class="notif-mention">@` + u + `</span>`
+		}
+		const dnaIcon = `<svg style="display:inline;vertical-align:middle;margin:0 2px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2c3 3 5 7 5 12"/><path d="M22 2c-3 3-5 7-5 12"/><path d="M2 22c3-3 5-7 5-12"/><path d="M22 22c-3-3-5-7-5-12"/><path d="M6 12h12"/><path d="M7 8h10"/><path d="M7 16h10"/></svg>`
+		var msgHTML string
 		switch n.Type {
 		case "curious_request":
-			nv.Message = fmt.Sprintf("@%s vuole sapere cosa pensi davvero di te", p["requester_name"])
+			msgHTML = mention(p["requester_name"]) + " vuole sapere cosa pensi davvero di te"
 			nv.Actions = []notifAction{
 				{Label: "[ accetta ]", URL: "/curious/" + p["request_id"] + "/accept", Class: "btn-cyan"},
 				{Label: "[ rifiuta ]", URL: "/curious/" + p["request_id"] + "/reject", Class: "btn-red"},
 			}
 		case "curious_accepted":
-			nv.Message = fmt.Sprintf("@%s ha accettato — puoi ora vedere il pensiero diretto", p["accepted_by"])
+			msgHTML = mention(p["accepted_by"]) + " ha accettato — puoi ora vedere il pensiero diretto"
 		case "dna":
-			nv.Message = fmt.Sprintf("@%s ha trovato un'affinità genetica (DNA) con un tuo pensiero", p["liker_name"])
+			msgHTML = mention(p["liker_name"]) + " ha trovato un'affinità genetica " + dnaIcon + " con un tuo pensiero"
 		case "new_comment":
-			nv.Message = fmt.Sprintf("@%s ha commentato un tuo pensiero", p["commenter_name"])
+			msgHTML = mention(p["commenter_name"]) + " ha commentato un tuo pensiero"
 		case "new_thought":
-			nv.Message = fmt.Sprintf("@%s ha espresso un pensiero su di te", p["author_name"])
+			msgHTML = mention(p["author_name"]) + " ha espresso un pensiero su di te"
 		case "new_follower":
-			nv.Message = fmt.Sprintf("@%s ha iniziato a seguirti", p["follower_name"])
+			msgHTML = mention(p["follower_name"]) + " ha iniziato a seguirti"
 		default:
-			nv.Message = n.Type
+			msgHTML = n.Type
 		}
+		nv.MessageHTML = template.HTML(msgHTML)
+		nv.Message = msgHTML
 
 		notifs = append(notifs, nv)
 	}
