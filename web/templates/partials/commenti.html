@@ -14,7 +14,7 @@
         {{if .AuthorAvatar}}
         <img class="avatar" src="{{.AuthorAvatar}}" alt="@{{.AuthorName}}" loading="lazy">
         {{else}}
-        <span class="avatar avatar-fallback" style="background:{{avatarColor .AuthorName}}">{{initial .AuthorName}}</span>
+        <span class="avatar avatar-identicon" aria-label="@{{.AuthorName}}">{{identicon .AuthorName}}</span>
         {{end}}
       </span>
       <div class="commento-body">
@@ -78,7 +78,7 @@
     {{if .AuthorAvatar}}
     <img class="avatar" src="{{.AuthorAvatar}}" alt="@{{.AuthorName}}" loading="lazy">
     {{else}}
-    <span class="avatar avatar-fallback" style="background:{{avatarColor .AuthorName}}">{{initial .AuthorName}}</span>
+    <span class="avatar avatar-identicon" aria-label="@{{.AuthorName}}">{{identicon .AuthorName}}</span>
     {{end}}
   </span>
   <div class="commento-body">
