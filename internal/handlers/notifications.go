@@ -17,6 +17,9 @@ type notifView struct {
 	Message     string
 	MessageHTML template.HTML
 	Actions     []notifAction
+	// Link è la destinazione a cui portare l'utente quando clicca la notifica
+	// (es. il singolo pensiero a schermo intero, oppure un profilo). Vuoto = nessun link.
+	Link string
 }
 
 type notifAction struct {
@@ -74,6 +77,15 @@ func GetNotifications(c *gin.Context) {
 			return `<span class="notif-mention">@` + u + `</span>`
 		}
 		const dnaIcon = `<svg style="display:inline;vertical-align:middle;margin:0 2px" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 2c3 3 5 7 5 12"/><path d="M22 2c-3 3-5 7-5 12"/><path d="M2 22c3-3 5-7 5-12"/><path d="M22 22c-3-3-5-7-5-12"/><path d="M6 12h12"/><path d="M7 8h10"/><path d="M7 16h10"/></svg>`
+		// pensieroLink costruisce il link alla pagina del singolo pensiero
+		// (a schermo intero), se il payload contiene un pensiero_id.
+		pensieroLink := func() string {
+			if id := p["pensiero_id"]; id != "" {
+				return "/pensieri/" + id
+			}
+			return ""
+		}
+
 		var msgHTML string
 		switch n.Type {
 		case "curious_request":
@@ -84,14 +96,21 @@ func GetNotifications(c *gin.Context) {
 			}
 		case "curious_accepted":
 			msgHTML = mention(p["accepted_by"]) + " ha accettato — puoi ora vedere il pensiero diretto"
+			nv.Link = pensieroLink()
 		case "dna":
 			msgHTML = mention(p["liker_name"]) + " ha trovato un'affinità genetica " + dnaIcon + " con un tuo pensiero"
+			nv.Link = pensieroLink()
 		case "new_comment":
 			msgHTML = mention(p["commenter_name"]) + " ha commentato un tuo pensiero"
+			nv.Link = pensieroLink()
 		case "new_thought":
 			msgHTML = mention(p["author_name"]) + " ha espresso un pensiero su di te"
+			nv.Link = pensieroLink()
 		case "new_follower":
 			msgHTML = mention(p["follower_name"]) + " ha iniziato a seguirti"
+			if name := p["follower_name"]; name != "" {
+				nv.Link = "/@" + name
+			}
 		default:
 			msgHTML = n.Type
 		}

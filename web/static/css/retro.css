@@ -30,7 +30,7 @@
   --panel-px: 1.5rem;
   --panel-py: 1.25rem;
 
-  --font: 'Segoe UI', Tahoma, Verdana, Geneva, 'Trebuchet MS', Arial, sans-serif;
+  --font: 'Courier New', Courier, monospace;
   --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
@@ -183,6 +183,15 @@ header .site-title span { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
     linear-gradient(180deg, #5f99da 0%, #3b7fc4 50%, #2f6cae 100%);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
 }
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.85rem;
+  font-size: 0.74rem;
+  color: var(--cyan);
+  font-weight: 700;
+}
+.back-link:hover { text-decoration: underline; }
 
 /* ===== FORMS ===== */
 .form-group { margin-bottom: 1rem; }
@@ -486,6 +495,11 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 .notif-type[data-type="curious_accepted"] { border-color: #3ab8e8; box-shadow: inset 0 1px 0 #fff, 0 0 0 1px #3ab8e840; }
 /* @username in grassetto arancione nei messaggi notifica */
 .notif-row .notif-mention { color: #e07b39; font-weight: 700; }
+/* notifica cliccabile: l'intero messaggio porta al pensiero/profilo collegato */
+.notif-clickable { cursor: pointer; }
+.notif-link { color: inherit; display: inline-block; }
+.notif-clickable:hover { background: #eaf3fc; }
+.notif-clickable:hover .notif-link { text-decoration: underline; }
 
 /* notification count badge on nav */
 .nav-notif-item { position: relative; }
@@ -776,6 +790,62 @@ input:disabled, textarea:disabled {
   .statusbar .container { gap: 0.5rem; font-size: 0.66rem; justify-content: center; }
   .status-hide-sm { display: none; }
 }
+
+/* ===== "COME FUNZIONA?" — banner del feed + modal ===== */
+.help-banner-text { color: var(--text); font-size: 0.9rem; margin: 0; }
+.help-banner-link {
+  border: none; background: none; padding: 0; cursor: pointer;
+  color: var(--cyan); font: inherit; font-weight: 700; text-decoration: underline;
+}
+.help-banner-link:hover { filter: brightness(1.1); }
+
+.nav-act.nav-help {
+  background: rgba(255,255,255,0.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+}
+
+.help-modal {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.help-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(20,40,70,0.45);
+  backdrop-filter: blur(2px);
+}
+.help-dialog {
+  position: relative;
+  width: 100%; max-width: 460px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(20,40,70,0.4), inset 0 0 0 1px rgba(255,255,255,0.7);
+  overflow: hidden;
+  animation: help-pop 0.16s var(--ease);
+}
+@keyframes help-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+.help-dialog .panel-title {
+  margin: 0 0 1rem; display: flex; align-items: center; justify-content: space-between;
+}
+.help-close {
+  border: none; background: none; cursor: pointer;
+  color: #fff; font-size: 1.3rem; line-height: 1; padding: 0 0.2rem;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+.help-close:hover { filter: brightness(1.15); }
+.help-body { padding: 0 var(--panel-px); color: var(--text); font-size: 0.92rem; }
+.help-body p { margin: 0 0 0.7rem; }
+.help-body ul { margin: 0 0 0.7rem; padding-left: 1.1rem; }
+.help-body li { margin-bottom: 0.35rem; }
+.help-actions {
+  display: flex; justify-content: flex-end;
+  padding: 0.9rem var(--panel-px) 1.1rem;
+}
+body.help-open { overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
