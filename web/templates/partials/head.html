@@ -11,8 +11,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="pensieri">
-<link rel="stylesheet" href="/static/css/retro.css">
-<script src="/static/js/htmx.min.js"></script>
+<link rel="stylesheet" href="{{asset "/static/css/retro.css"}}">
+<script src="{{asset "/static/js/htmx.min.js"}}"></script>
 <script>
   // pilota la barra di caricamento globale durante le richieste htmx
   document.addEventListener('htmx:beforeRequest', function () {

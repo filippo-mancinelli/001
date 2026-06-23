@@ -2,6 +2,11 @@ package handlers
 
 import (
 	"net/http"
+	"os"
+	"strings"
+	"sync"
+
+	"pensieri/internal/assets"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,14 +19,30 @@ func GetManifest(c *gin.Context) {
 	c.File("web/static/manifest.webmanifest")
 }
 
-// GetServiceWorker serve il service worker dalla radice, in modo che possa
-// controllare l'intero sito (scope "/").
+var (
+	swOnce sync.Once
+	swBody string
+)
+
+// loadServiceWorker legge sw.js una volta e inietta la versione degli asset.
+func loadServiceWorker() string {
+	swOnce.Do(func() {
+		b, err := os.ReadFile("web/static/sw.js")
+		if err != nil {
+			swBody = ""
+			return
+		}
+		swBody = strings.ReplaceAll(string(b), "__ASSET_VERSION__", assets.Version())
+	})
+	return swBody
+}
+
+// GetServiceWorker serve il service worker dalla radice (scope "/").
 func GetServiceWorker(c *gin.Context) {
 	c.Header("Content-Type", "application/javascript; charset=utf-8")
 	c.Header("Service-Worker-Allowed", "/")
-	// niente cache aggressiva: vogliamo poter aggiornare il SW rapidamente
 	c.Header("Cache-Control", "no-cache")
-	c.File("web/static/sw.js")
+	c.String(http.StatusOK, loadServiceWorker())
 }
 
 // GetInstall mostra la pagina che guida (o avvia) l'installazione della PWA.

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"pensieri/internal/assets"
 	"pensieri/internal/db"
 	"pensieri/internal/handlers"
 	"pensieri/internal/middleware"
@@ -88,6 +89,19 @@ var templateFuncs = template.FuncMap{
 	},
 	"add": func(a, b int) int { return a + b },
 	"sub": func(a, b int) int { return a - b },
+	// firma l'URL di un asset statico con la versione del contenuto (?v=hash)
+	"asset": assets.URL,
+}
+
+// staticCacheHeaders: URL versionati immutabili (1 anno), gli altri cache breve.
+func staticCacheHeaders() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if c.Query("v") != "" {
+			c.Header("Cache-Control", "public, max-age=31536000, immutable")
+		} else {
+			c.Header("Cache-Control", "public, max-age=300")
+		}
+	}
 }
 
 func main() {
@@ -105,7 +119,9 @@ func main() {
 	}
 
 	r := gin.Default()
-	r.Static("/static", "web/static")
+	// asset statici: cache lunga per gli URL versionati, breve per gli altri
+	staticGroup := r.Group("/static", staticCacheHeaders())
+	staticGroup.Static("/", "web/static")
 
 	// PWA: manifest e service worker serviti dalla radice (scope "/"),
 	// pagina di installazione pubblica.
