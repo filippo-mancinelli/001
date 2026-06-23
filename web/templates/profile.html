@@ -60,12 +60,20 @@
     <div class="panel">
       <div class="panel-title">// conoscenze ({{.FollowingCount}})</div>
       {{if .Following}}
+        {{$i := 0}}
         {{range .Following}}
-        <div class="user-row">
-          <span class="avatar-sm">{{template "avatar" .}}</span>
-          <a href="/@{{.Username}}" class="username">{{.Username}}</a>
-          {{if .DisplayName}}<span class="user-row-name">{{.DisplayName}}</span>{{end}}
-        </div>
+          {{$i = add $i 1}}
+          <div class="user-row{{if gt $i 5}} extra-row-following hidden{{end}}">
+            <span class="avatar-sm">{{template "avatar" .}}</span>
+            <a href="/@{{.Username}}" class="username">{{.Username}}</a>
+            {{if .DisplayName}}<span class="user-row-name">{{.DisplayName}}</span>{{end}}
+          </div>
+        {{end}}
+        {{if gt .FollowingCount 5}}
+        <button class="btn btn-sm show-more-btn" style="margin-top:0.5rem"
+          onclick="toggleRows('following', this)">
+          [ mostra di più ({{sub .FollowingCount 5}}) ]
+        </button>
         {{end}}
       {{else}}
       <div class="empty">nessuna conoscenza nella rete.</div>
@@ -75,12 +83,20 @@
     <div class="panel">
       <div class="panel-title">// seguito da ({{.FollowersCount}})</div>
       {{if .Followers}}
+        {{$j := 0}}
         {{range .Followers}}
-        <div class="user-row">
-          <span class="avatar-sm">{{template "avatar" .}}</span>
-          <a href="/@{{.Username}}" class="username">{{.Username}}</a>
-          {{if .DisplayName}}<span class="user-row-name">{{.DisplayName}}</span>{{end}}
-        </div>
+          {{$j = add $j 1}}
+          <div class="user-row{{if gt $j 5}} extra-row-followers hidden{{end}}">
+            <span class="avatar-sm">{{template "avatar" .}}</span>
+            <a href="/@{{.Username}}" class="username">{{.Username}}</a>
+            {{if .DisplayName}}<span class="user-row-name">{{.DisplayName}}</span>{{end}}
+          </div>
+        {{end}}
+        {{if gt .FollowersCount 5}}
+        <button class="btn btn-sm show-more-btn" style="margin-top:0.5rem"
+          onclick="toggleRows('followers', this)">
+          [ mostra di più ({{sub .FollowersCount 5}}) ]
+        </button>
         {{end}}
       {{else}}
       <div class="empty">ancora nessuno nella rete.</div>
@@ -104,13 +120,37 @@
     {{end}}
 
     {{if .Pensieri}}
+      {{$k := 0}}
       {{range .Pensieri}}
-        {{template "pensiero-card" .}}
+        {{$k = add $k 1}}
+        <div class="{{if gt $k 5}}extra-row-pensieri hidden{{end}}">
+          {{template "pensiero-card" .}}
+        </div>
+      {{end}}
+      {{if gt (len .Pensieri) 5}}
+      <button class="btn btn-sm show-more-btn" style="margin-top:0.5rem"
+        onclick="toggleRows('pensieri', this)">
+        [ mostra di più ({{sub (len .Pensieri) 5}}) ]
+      </button>
       {{end}}
     {{else}}
     <div class="empty">nessun pensiero ancora</div>
     {{end}}
   </div>
+
+<script>
+function toggleRows(section, btn) {
+  var rows = document.querySelectorAll('.extra-row-' + section);
+  var hidden = rows.length > 0 && rows[0].classList.contains('hidden');
+  rows.forEach(function(r) { r.classList.toggle('hidden', !hidden); });
+  if (hidden) {
+    btn.textContent = '[ mostra meno ]';
+  } else {
+    var total = rows.length;
+    btn.textContent = '[ mostra di più (' + total + ') ]';
+  }
+}
+</script>
 
 </div>
 {{template "statusbar" .}}

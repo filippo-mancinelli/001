@@ -86,6 +86,8 @@ var templateFuncs = template.FuncMap{
 		sb.WriteString(`</svg>`)
 		return template.HTML(sb.String())
 	},
+	"add": func(a, b int) int { return a + b },
+	"sub": func(a, b int) int { return a - b },
 }
 
 func main() {
