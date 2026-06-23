@@ -488,6 +488,22 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 /* ===== DIVIDER ===== */
 .divider { border: none; border-top: 1px solid var(--border-soft); margin: 1.25rem 0; }
 
+/* ===== OAUTH ===== */
+.oauth-sep {
+  display: flex; align-items: center; gap: 0.6rem;
+  margin: 1rem 0 0.85rem; color: var(--text-dim);
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.oauth-sep::before, .oauth-sep::after {
+  content: ""; flex: 1; border-top: 1px solid var(--border-soft);
+}
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 0.55rem;
+  text-decoration: none;
+}
+.btn-google:hover { text-decoration: none; }
+.btn-google .google-icon { flex: 0 0 auto; display: block; }
+
 /* ===== VERSION EDITOR ===== */
 .version-list { margin-top: 0.75rem; }
 .version-item {
