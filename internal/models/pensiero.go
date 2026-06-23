@@ -44,6 +44,10 @@ type PensieroRisolto struct {
 	// eliminare il pensiero per moderare contenuti sensibili o vietati.
 	CanModerate bool
 
+	// Crowned è true se un amministratore ha "coronato" il pensiero: viene messo
+	// in primo piano nel feed e mostrato con un bordo dorato e una corona.
+	Crowned bool
+
 	// Anon è true se il pensiero è mostrato a un visitatore non autenticato:
 	// le azioni che richiedono un account (DNA, "sono curioso", commenti) vengono
 	// sostituite da un invito a registrarsi.

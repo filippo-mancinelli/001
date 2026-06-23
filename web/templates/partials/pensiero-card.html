@@ -1,5 +1,29 @@
 {{define "pensiero-card"}}
-<div class="pensiero-card" id="pensiero-{{.PensieroID}}">
+<div class="pensiero-card{{if .Crowned}} pensiero-crowned{{end}}" id="pensiero-{{.PensieroID}}">
+  {{if .CanModerate}}
+  <details class="card-menu">
+    <summary class="card-menu-btn" aria-label="azioni di moderazione" title="azioni">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+        <circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/>
+      </svg>
+    </summary>
+    <div class="card-menu-pop" role="menu">
+      <button type="button" class="card-menu-item" role="menuitem"
+        hx-post="/pensieri/{{.PensieroID}}/corona"
+        hx-target="#pensiero-{{.PensieroID}}"
+        hx-swap="outerHTML">
+        <span class="card-menu-ico">👑</span>{{if .Crowned}}togli corona{{else}}corona{{end}}
+      </button>
+      <button type="button" class="card-menu-item card-menu-item-danger" role="menuitem"
+        hx-delete="/pensieri/{{.PensieroID}}"
+        hx-target="#pensiero-{{.PensieroID}}"
+        hx-swap="outerHTML"
+        hx-confirm="Eliminare definitivamente questo pensiero? L'azione rimuove anche commenti e versioni.">
+        <span class="card-menu-ico">⛌</span>elimina
+      </button>
+    </div>
+  </details>
+  {{end}}
   {{if .CuriousPending}}
   <details class="attesa-tip">
     <summary class="attesa-btn" aria-label="In attesa di rivelazione">
@@ -13,6 +37,7 @@
   </details>
   {{end}}
   <div class="pensiero-meta">
+    {{if .Crowned}}<span class="crown-badge" title="pensiero coronato">👑</span>{{end}}
     <span class="user-tooltip-wrap">
       <details class="user-tooltip">
         <summary class="author">@{{.AuthorName}}</summary>
@@ -36,13 +61,6 @@
     </span>
     {{if .IsDirect}}<span class="badge-direct">versione personale</span>{{end}}
     <span class="pensiero-data">{{.CreatedAt.Format "02/01/2006 15:04"}}</span>
-    {{if .CanModerate}}
-    <button class="pensiero-mod-del" title="elimina pensiero (moderazione)"
-      hx-delete="/pensieri/{{.PensieroID}}"
-      hx-target="#pensiero-{{.PensieroID}}"
-      hx-swap="outerHTML"
-      hx-confirm="Eliminare definitivamente questo pensiero? L'azione rimuove anche commenti e versioni.">⛌ elimina</button>
-    {{end}}
   </div>
   <div class="pensiero-contenuto">{{.Content}}</div>
   <div class="pensiero-footer">
@@ -57,6 +75,15 @@
       </button>
     </div>
     {{end}}
+    <button type="button" class="pensiero-share-btn"
+      title="condividi pensiero" aria-label="condividi pensiero"
+      onclick="openPensieroShare('{{.PensieroID}}', '{{.AuthorName}}', '{{.SubjectName}}')">
+      <svg class="share-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+        <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>
+      </svg>
+      <span>[ condividi ]</span>
+    </button>
     <div class="pensiero-reazioni">
       {{template "dna-button" .}}
     </div>

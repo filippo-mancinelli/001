@@ -321,21 +321,71 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 .pensiero-meta .author { color: var(--cyan); font-weight: 700; }
 .pensiero-meta .subject { color: var(--amber); font-weight: 700; }
 .pensiero-data { margin-left: auto; font-size: 0.64rem; color: var(--text-dim); opacity: 0.75; white-space: nowrap; }
-/* pulsante di moderazione (solo admin): elimina l'intero pensiero */
-.pensiero-mod-del {
-  font-size: 0.62rem; font-weight: 700; cursor: pointer; white-space: nowrap;
-  color: var(--red); background: linear-gradient(180deg, #fff5f5, #fde4e4);
-  border: 1px solid #e6b3b3; border-radius: 6px; padding: 0.1rem 0.4rem;
-  text-transform: uppercase; letter-spacing: 0.04em;
-  transition: background 0.12s, color 0.12s;
+.crown-badge { font-size: 0.85rem; line-height: 1; flex: 0 0 auto; }
+
+/* ===== MENU AZIONI CARD (3 puntini in alto a destra, solo admin) ===== */
+.card-menu { position: absolute; top: 0.4rem; right: 0.45rem; z-index: 4; }
+.card-menu > summary { list-style: none; cursor: pointer; }
+.card-menu > summary::-webkit-details-marker { display: none; }
+.card-menu-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 6px; color: var(--text-dim);
+  background: linear-gradient(180deg, #ffffff, #eef3f9);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+  transition: background 0.12s, color 0.12s, transform 0.08s var(--ease);
 }
-.pensiero-mod-del:hover { background: linear-gradient(180deg, #fdeaea, #f8d2d2); color: #a01f1f; }
+.card-menu-btn:hover { background: linear-gradient(180deg, #f4f8fd, #e3ecf6); color: var(--blue); }
+.card-menu-btn:active { transform: scale(0.92); }
+.card-menu[open] .card-menu-btn { background: linear-gradient(180deg, #e3ecf6, #d4e2f1); color: var(--blue); }
+.card-menu-pop {
+  position: absolute; top: calc(100% + 4px); right: 0; min-width: 152px;
+  display: flex; flex-direction: column; gap: 0.15rem;
+  background: linear-gradient(180deg, #ffffff, #f4f8fd);
+  border: 1px solid var(--border); border-radius: 7px; padding: 0.3rem;
+  box-shadow: 0 6px 16px rgba(30,50,80,0.2), inset 0 1px 0 rgba(255,255,255,0.8);
+  animation: alertin 0.12s var(--ease);
+}
+.card-menu-item {
+  display: flex; align-items: center; gap: 0.45rem; width: 100%; text-align: left;
+  cursor: pointer; font-family: inherit; font-size: 0.78rem; font-weight: 700;
+  color: #3a4654; background: none; border: 1px solid transparent; border-radius: 5px;
+  padding: 0.34rem 0.5rem; transition: background 0.12s, color 0.12s;
+}
+.card-menu-item:hover { background: rgba(54,121,209,0.1); color: var(--blue); }
+.card-menu-item-danger { color: var(--red); }
+.card-menu-item-danger:hover { background: rgba(214,69,69,0.1); color: #a01f1f; }
+.card-menu-ico { font-size: 0.9rem; line-height: 1; width: 1.1em; text-align: center; flex: 0 0 auto; }
+
+/* col menu admin presente sposto l'icona "in attesa" per non sovrapporla */
+.card-menu ~ .attesa-tip { right: 2.55rem; }
+
+/* ===== PENSIERO CORONATO (bordo dorato leggero) ===== */
+.pensiero-crowned {
+  border-color: #e6c34d; border-left-color: #e6c34d;
+  background: linear-gradient(180deg, #fffdf6, #fdf6e3);
+  box-shadow: inset 0 1px 0 #fff, 0 0 0 1px rgba(230,195,77,0.35), 0 2px 8px rgba(200,160,40,0.16);
+}
+.pensiero-crowned:hover { border-left-color: #d9af2e; box-shadow: 0 3px 12px rgba(200,160,40,0.26); }
 
 .pensiero-contenuto { line-height: 1.5; white-space: pre-wrap; word-break: break-word; font-size: 0.92rem; color: #333a43; }
 
-.pensiero-footer { display: flex; align-items: center; margin-top: 0.45rem; }
+.pensiero-footer { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.45rem; }
 .pensiero-azioni { display: flex; gap: 0.5rem; align-items: center; }
 .btn-curioso { padding-top: 0.12rem; padding-bottom: 0.12rem; }
+
+.pensiero-share-btn {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  background: none; border: 1px solid transparent; border-radius: 999px;
+  cursor: pointer; padding: 0.15rem 0.5rem; font-family: inherit;
+  font-size: 0.72rem; font-weight: 700; color: var(--text-dim);
+  letter-spacing: 0.02em;
+  transition: background 0.15s var(--ease), border-color 0.15s var(--ease),
+              color 0.15s var(--ease), transform 0.08s var(--ease);
+}
+.pensiero-share-btn:hover { background: rgba(54,121,209,0.08); border-color: rgba(54,121,209,0.35); color: var(--cyan); }
+.pensiero-share-btn:active { transform: scale(0.94); }
+.share-ico { display: inline-flex; width: 14px; height: 14px; flex: 0 0 auto; }
 
 .badge-direct {
   font-size: 0.64rem; color: #1f7a2c; font-weight: 700;

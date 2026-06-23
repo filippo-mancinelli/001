@@ -117,31 +117,8 @@ func GetPensiero(c *gin.Context) {
 
 	// risolto per il viewer: l'autore vede sempre la propria versione diretta,
 	// gli altri seguono la normale logica di visibilità.
-	row := db.Pool.QueryRow(context.Background(), `
-		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
-			CASE WHEN t.author_id = $2 THEN
-				COALESCE(
-					(SELECT content FROM versioni_pensiero WHERE pensiero_id = t.id AND audience_id = t.subject_id),
-					(SELECT content FROM versioni_pensiero WHERE pensiero_id = t.id AND audience_id IS NULL)
-				)
-			ELSE `+resolviContenuto("$2")+` END AS content,
-			(t.author_id = $2 OR `+isDiretta("$2")+`) AS is_direct,
-			(t.author_id <> $2 AND `+puoCurioso("$2")+`) AS can_send_curious,
-			`+curiosoInAttesa("$2")+` AS curious_pending,
-			`+contaCommenti()+` AS comment_count,
-			`+contaDna()+` AS dna_count,
-			`+dnaFatto("$2")+` AS dna_done,
-			t.created_at AS created_at
-		FROM pensieri t
-		JOIN users u_a ON u_a.id = t.author_id
-		JOIN users u_s ON u_s.id = t.subject_id
-		WHERE t.id = $1
-	`, pensieroID, user.ID)
-
-	var rt models.PensieroRisolto
-	if err := row.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-		&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount,
-		&rt.DnaCount, &rt.DnaDone, &rt.CreatedAt); err != nil {
+	rt, err := risolviPensiero(context.Background(), pensieroID, user.ID)
+	if err != nil {
 		c.HTML(http.StatusNotFound, "pensiero.html", gin.H{"User": user})
 		return
 	}
@@ -199,6 +176,39 @@ func DeletePensiero(c *gin.Context) {
 	}
 
 	c.Data(http.StatusOK, "text/html", []byte(""))
+}
+
+// PostCorona "corona" o decorona un pensiero (toggle). Riservato agli
+// amministratori: un pensiero coronato finisce in primo piano nel feed e viene
+// mostrato con un bordo dorato e una corona. Risponde con la card aggiornata
+// così HTMX può sostituirla in place (hx-swap="outerHTML").
+func PostCorona(c *gin.Context) {
+	user := c.MustGet("user").(models.User)
+	if !user.IsAdmin {
+		c.String(http.StatusForbidden, "non autorizzato")
+		return
+	}
+
+	pensieroID := c.Param("id")
+	ctx := context.Background()
+
+	var crowned bool
+	if err := db.Pool.QueryRow(ctx,
+		`UPDATE pensieri SET crowned = NOT crowned WHERE id = $1 RETURNING crowned`,
+		pensieroID).Scan(&crowned); err != nil {
+		c.String(http.StatusNotFound, "pensiero non trovato")
+		return
+	}
+
+	// ri-renderizza la card aggiornata (bordo dorato + corona o rimozione).
+	rt, err := risolviPensiero(ctx, pensieroID, user.ID)
+	if err != nil {
+		c.String(http.StatusInternalServerError, "errore aggiornamento")
+		return
+	}
+	rt.CanModerate = user.IsAdmin
+
+	c.HTML(http.StatusOK, "pensiero-card", rt)
 }
 
 func EliminaVersionePensiero(c *gin.Context) {

@@ -93,4 +93,81 @@
     <span class="status-hide-sm">personal knowledge network</span>
   </div>
 </footer>
+
+<!-- modal condividi pensiero (globale, usato dalle pensiero-card) -->
+<div id="pensiero-share-modal" class="modal-overlay hidden" onclick="if(event.target===this)closePensieroShare()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pensiero-share-title">
+    <div class="panel-title panel-title-bar" id="pensiero-share-title">
+      <span>// condividi pensiero</span>
+      <button type="button" class="share-btn" onclick="closePensieroShare()" aria-label="chiudi" title="chiudi">✕</button>
+    </div>
+    <div class="modal-body">
+      <label for="pensiero-share-url">link al pensiero</label>
+      <div class="share-link-row">
+        <input id="pensiero-share-url" type="text" readonly value="">
+        <button type="button" class="btn btn-sm btn-cyan" onclick="copyPensieroShareUrl(this)">[ copia ]</button>
+      </div>
+      <button type="button" id="pensiero-native-share-btn" class="btn btn-sm hidden" onclick="nativePensieroShare()" style="margin-top:0.85rem;width:100%">
+        [ condividi su… ]
+      </button>
+      <div class="share-targets">
+        <a id="pensiero-share-wa" class="btn btn-sm" target="_blank" rel="noopener noreferrer">whatsapp</a>
+        <a id="pensiero-share-tg" class="btn btn-sm" target="_blank" rel="noopener noreferrer">telegram</a>
+        <a id="pensiero-share-tw" class="btn btn-sm" target="_blank" rel="noopener noreferrer">x</a>
+        <a id="pensiero-share-mail" class="btn btn-sm">email</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var pShareUrl = '', pShareTitle = '', pShareText = '';
+
+function openPensieroShare(id, author, subject) {
+  pShareUrl = location.origin + '/pensieri/' + id;
+  pShareTitle = 'pensieri // un pensiero';
+  pShareText = author
+    ? 'Un pensiero di @' + author + (subject ? ' su @' + subject : '') + ' su pensieri'
+    : 'Dai un\'occhiata a questo pensiero su pensieri';
+  document.getElementById('pensiero-share-url').value = pShareUrl;
+  var enc = encodeURIComponent(pShareUrl);
+  var encText = encodeURIComponent(pShareText);
+  document.getElementById('pensiero-share-wa').href = 'https://wa.me/?text=' + encodeURIComponent(pShareText + ' ' + pShareUrl);
+  document.getElementById('pensiero-share-tg').href = 'https://t.me/share/url?url=' + enc + '&text=' + encText;
+  document.getElementById('pensiero-share-tw').href = 'https://twitter.com/intent/tweet?url=' + enc + '&text=' + encText;
+  document.getElementById('pensiero-share-mail').href = 'mailto:?subject=' + encodeURIComponent(pShareTitle) + '&body=' + encodeURIComponent(pShareText + '\n' + pShareUrl);
+  document.getElementById('pensiero-native-share-btn').classList.toggle('hidden', !navigator.share);
+  document.getElementById('pensiero-share-modal').classList.remove('hidden');
+}
+
+function closePensieroShare() {
+  document.getElementById('pensiero-share-modal').classList.add('hidden');
+}
+
+function copyPensieroShareUrl(btn) {
+  var input = document.getElementById('pensiero-share-url');
+  var done = function() {
+    var prev = btn.textContent;
+    btn.textContent = '[ copiato ✓ ]';
+    setTimeout(function() { btn.textContent = prev; }, 1600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(pShareUrl).then(done, function() {
+      input.select(); document.execCommand('copy'); done();
+    });
+  } else {
+    input.select(); document.execCommand('copy'); done();
+  }
+}
+
+function nativePensieroShare() {
+  if (navigator.share) {
+    navigator.share({ title: pShareTitle, text: pShareText, url: pShareUrl }).catch(function() {});
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closePensieroShare();
+});
+</script>
 {{end}}
