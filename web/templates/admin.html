@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>{{template "head" .}}<title>pensieri // admin</title></head>
+<body>
+{{template "nav" .}}
+<div class="container" style="padding-top:1rem">
+  <div class="panel">
+    <div class="panel-title">// admin · gestione utenti</div>
+
+    <p class="empty" style="text-align:left; margin:0 0 1rem">
+      Area riservata. L'eliminazione di un utente è <strong>irreversibile</strong> e
+      rimuove a cascata tutti i suoi dati: sessioni, follow, pensieri (scritti e
+      ricevuti) con relative versioni, richieste “sono curioso”, commenti, DNA,
+      notifiche, avatar caricato. <strong>{{len .Users}}</strong> utenti.
+    </p>
+
+    <div style="overflow-x:auto">
+    <table class="admin-table" style="width:100%; border-collapse:collapse">
+      <thead>
+        <tr style="text-align:left">
+          <th style="padding:0.5rem">utente</th>
+          <th style="padding:0.5rem">email</th>
+          <th style="padding:0.5rem; text-align:right">pensieri</th>
+          <th style="padding:0.5rem; text-align:right">commenti</th>
+          <th style="padding:0.5rem">iscritto</th>
+          <th style="padding:0.5rem; text-align:right">azioni</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Users}}
+        <tr id="user-row-{{.ID}}" style="border-top:1px solid var(--line, #ddd)">
+          <td style="padding:0.5rem">
+            <a href="/@{{.Username}}">@{{.Username}}</a>
+            {{if .DisplayName}}<span style="opacity:.6"> · {{.DisplayName}}</span>{{end}}
+            {{if .IsAdmin}}<span class="notif-type" style="margin-left:.4rem">admin</span>{{end}}
+            {{if .HasUpload}}<span title="ha un avatar su S3" style="opacity:.6"> 📎</span>{{end}}
+          </td>
+          <td style="padding:0.5rem; word-break:break-all">{{.Email}}</td>
+          <td style="padding:0.5rem; text-align:right">{{.PensieriCount}}</td>
+          <td style="padding:0.5rem; text-align:right">{{.CommentiCount}}</td>
+          <td style="padding:0.5rem; white-space:nowrap">{{.CreatedAt.Format "02/01/2006"}}</td>
+          <td style="padding:0.5rem; text-align:right; white-space:nowrap">
+            {{if eq .ID $.Me}}
+              <span style="opacity:.5">(tu)</span>
+            {{else}}
+              <button class="btn btn-sm btn-red"
+                hx-delete="/admin/users/{{.ID}}"
+                hx-target="#user-row-{{.ID}}"
+                hx-swap="outerHTML"
+                hx-confirm="Eliminare definitivamente @{{.Username}} e TUTTI i suoi dati? L'operazione è irreversibile.">
+                elimina
+              </button>
+            {{end}}
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+{{template "statusbar" .}}
+</body>
+</html>
