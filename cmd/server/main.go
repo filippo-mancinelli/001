@@ -157,6 +157,8 @@ func main() {
 
 		auth.GET("/users/:username/mini", handlers.GetUserMini)
 
+		auth.POST("/dna/:id", handlers.PostDna)
+
 		auth.POST("/curious/:id", handlers.PostCurious)
 		auth.POST("/curious/:id/accept", handlers.PostCuriousAccept)
 		auth.POST("/curious/:id/reject", handlers.PostCuriousReject)

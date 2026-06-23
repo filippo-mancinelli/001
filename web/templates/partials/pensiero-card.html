@@ -41,6 +41,9 @@
     <span style="color:var(--amber); font-size:0.75rem">richiesta inviata — in attesa...</span>
   </div>
   {{end}}
+  <div class="pensiero-reazioni">
+    {{template "dna-button" .}}
+  </div>
   <div class="pensiero-commenti" id="commenti-{{.PensieroID}}">
     <button class="commenti-toggle"
       hx-get="/pensieri/{{.PensieroID}}/commenti"
