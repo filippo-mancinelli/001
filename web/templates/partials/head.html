@@ -91,8 +91,13 @@
       if (e.key === 'Escape') closeHelp();
     });
     document.addEventListener('DOMContentLoaded', function () {
-      var b = byId('help-banner');
-      if (b && !seen()) b.hidden = false;
+      // Il modal è renderizzato solo per gli utenti loggati ({{if .User}}):
+      // se è presente e non è ancora stato visto, lo apriamo al primo accesso.
+      // Gli anonimi che visitano pagine pubbliche non hanno il modal nel DOM,
+      // quindi non lo vedranno mai. Il pulsante "?" nella nav resta sempre
+      // disponibile per riaprirlo in seguito.
+      var m = byId('help-modal');
+      if (m && !seen()) openHelp();
     });
   })();
 

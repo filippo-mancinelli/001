@@ -809,6 +809,9 @@ input:disabled, textarea:disabled {
   display: flex; align-items: center; justify-content: center;
   padding: 1rem;
 }
+/* l'attributo hidden deve avere la precedenza su display:flex, altrimenti
+   il modal resta sempre visibile e non si riesce a chiuderlo */
+.help-modal[hidden] { display: none; }
 .help-backdrop {
   position: absolute; inset: 0;
   background: rgba(20,40,70,0.45);
