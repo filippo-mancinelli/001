@@ -471,6 +471,9 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 }
 .commenti-barra .pensiero-commenti { flex: 1 1 auto; min-width: 0; }
 .commenti-barra .pensiero-share-btn { margin-left: auto; }
+/* quando i commenti sono espansi, nascondi il pulsante condividi
+   così i commenti tornano a larghezza intera */
+.commenti-barra:has(.commenti-thread) .pensiero-share-btn { display: none; }
 
 .commenti-toggle {
   display: inline-flex; align-items: center; gap: 0.35rem;
@@ -542,7 +545,7 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 }
 .user-row:hover { background: linear-gradient(#eef5fd, #e2eefb); }
 .user-row:last-child { border-bottom: none; }
-.username { color: var(--cyan); font-weight: 600; }
+.username { color: var(--cyan); font-weight: 600; white-space: nowrap; flex: 0 0 auto; }
 .username::before { content: '@'; color: #9aa7b4; font-weight: 400; }
 
 /* ===== NOTIFICATIONS ===== */
@@ -780,7 +783,12 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 .profile-stats { margin-top: 0.8rem; display: flex; gap: 1.5rem; font-size: 0.82rem; color: var(--text-dim); }
 .profile-stats strong { color: var(--blue-dark); font-size: 1.05rem; }
 .profile-actions { margin-left: auto; }
-.user-row-name { color: var(--text-dim); font-size: 0.8rem; }
+.user-row-name { color: var(--text-dim); font-size: 0.8rem; white-space: nowrap; }
+.user-row-bio {
+  color: var(--text-dim); font-size: 0.8rem;
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 
 /* ===== NAV AVATAR ===== */
 .nav-me { display: inline-flex; align-items: center; }
