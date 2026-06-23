@@ -2,19 +2,34 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
 	"pensieri/internal/db"
 	"pensieri/internal/models"
+	"pensieri/internal/storage"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var allowedPresence = map[string]bool{
 	"online": true, "away": true, "busy": true, "offline": true,
 }
+
+// avatarExt mappa i content-type immagine ammessi per l'avatar all'estensione
+// del file. Limita gli upload ai formati immagine sicuri e ampiamente supportati.
+var avatarExt = map[string]string{
+	"image/jpeg": "jpg",
+	"image/png":  "png",
+	"image/gif":  "gif",
+	"image/webp": "webp",
+}
+
+// maxAvatarBytes limita la dimensione dell'immagine avatar caricabile (5 MB).
+const maxAvatarBytes = 5 << 20
 
 // GetSettings mostra la pagina impostazioni con i valori correnti.
 // I messaggi di esito vengono passati via query param (?saved=... / ?err=...).
@@ -43,7 +58,18 @@ func PostProfileSettings(c *gin.Context) {
 	if !allowedPresence[presence] {
 		presence = "online"
 	}
-	if avatarURL != "" && !strings.HasPrefix(avatarURL, "http://") && !strings.HasPrefix(avatarURL, "https://") {
+
+	// Se è stato caricato un file immagine, ha la precedenza sul campo URL:
+	// viene caricato su S3 e l'avatar punta al proxy /media/avatars/<file>.
+	if uploaded, errMsg := uploadAvatarIfPresent(c, user.ID); errMsg != "" {
+		redirectSettings(c, "", errMsg)
+		return
+	} else if uploaded != "" {
+		avatarURL = uploaded
+	}
+
+	if avatarURL != "" && !strings.HasPrefix(avatarURL, "http://") &&
+		!strings.HasPrefix(avatarURL, "https://") && !strings.HasPrefix(avatarURL, "/media/") {
 		redirectSettings(c, "", "url-immagine-non-valido")
 		return
 	}
@@ -178,6 +204,48 @@ func redirectSettings(c *gin.Context, saved, errMsg string) {
 		target += "?" + e
 	}
 	c.Redirect(http.StatusFound, target)
+}
+
+// uploadAvatarIfPresent gestisce l'eventuale file "avatar_file" del form.
+// Ritorna ("", "") se nessun file è stato caricato; in caso di upload riuscito
+// ritorna l'URL relativo da salvare in avatar_url (es. "/media/avatars/<id>.jpg").
+// Il secondo valore, se non vuoto, è un codice di errore da mostrare all'utente.
+func uploadAvatarIfPresent(c *gin.Context, userID string) (string, string) {
+	fh, err := c.FormFile("avatar_file")
+	if err != nil || fh == nil {
+		return "", "" // nessun file caricato
+	}
+	if !storage.Configured() {
+		return "", "upload-non-disponibile"
+	}
+	if fh.Size > maxAvatarBytes {
+		return "", "immagine-troppo-grande"
+	}
+
+	f, err := fh.Open()
+	if err != nil {
+		return "", "errore-upload"
+	}
+	defer f.Close()
+
+	// Rileva il content-type dai primi byte del file (non ci si fida del nome
+	// né dell'header inviato dal client), poi verifica che sia un'immagine ammessa.
+	head := make([]byte, 512)
+	n, _ := f.Read(head)
+	contentType := http.DetectContentType(head[:n])
+	ext, ok := avatarExt[contentType]
+	if !ok {
+		return "", "formato-immagine-non-valido"
+	}
+	if _, err := f.Seek(0, 0); err != nil {
+		return "", "errore-upload"
+	}
+
+	name := fmt.Sprintf("%s-%s.%s", userID, uuid.NewString(), ext)
+	if err := storage.Upload(c.Request.Context(), "avatars/"+name, contentType, f); err != nil {
+		return "", "errore-upload"
+	}
+	return "/media/avatars/" + name, ""
 }
 
 func truncate(s string, max int) string {
