@@ -81,7 +81,14 @@ func GetFeed(c *gin.Context) {
 	coronatiPrima(pensieri)
 	coronatiPrima(pubblici)
 
-	c.HTML(http.StatusOK, "feed.html", gin.H{"User": viewerForTemplate(user, auth), "Pensieri": pensieri, "Pubblici": pubblici})
+	// quando il feed personale è vuoto suggeriamo utenti da seguire (gli stessi
+	// "suggeriti dal network" della pagina cerca), così la home resta utile.
+	var suggeriti []models.User
+	if auth && len(pensieri) == 0 {
+		suggeriti, _ = queryUsers(user, "")
+	}
+
+	c.HTML(http.StatusOK, "feed.html", gin.H{"User": viewerForTemplate(user, auth), "Pensieri": pensieri, "Pubblici": pubblici, "Suggeriti": suggeriti})
 }
 
 // coronatiPrima riordina in place una lista di pensieri portando quelli

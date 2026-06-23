@@ -59,8 +59,8 @@ func GetUserMini(c *gin.Context) {
 	username := c.Param("username")
 	var u models.User
 	err := db.Pool.QueryRow(context.Background(),
-		`SELECT username, COALESCE(display_name, '') FROM users WHERE username = $1`,
-		username).Scan(&u.Username, &u.DisplayName)
+		`SELECT username, COALESCE(display_name, ''), COALESCE(avatar_url, '') FROM users WHERE username = $1`,
+		username).Scan(&u.Username, &u.DisplayName, &u.AvatarURL)
 	if err != nil {
 		u.Username = username
 	}

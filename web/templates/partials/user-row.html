@@ -1,0 +1,8 @@
+{{define "user-row"}}
+<div class="user-row">
+  <span class="avatar-sm">{{template "avatar" .}}</span>
+  <a href="/@{{.Username}}" class="username">{{.Username}}</a>
+  {{if .DisplayName}}<span class="user-row-name">{{.DisplayName}}</span>{{end}}
+  {{if .Bio}}<span style="color:var(--text-dim); font-size:0.8rem">— {{.Bio}}</span>{{end}}
+</div>
+{{end}}
