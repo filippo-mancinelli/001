@@ -8,9 +8,13 @@
     <div class="panel-title">// notifiche</div>
     {{if .Notifications}}
       {{range .Notifications}}
-      <div class="notif-row {{if not .Read}}unread{{end}}">
+      <div class="notif-row {{if not .Read}}unread{{end}}{{if .Link}} notif-clickable{{end}}">
         <span class="notif-type" data-type="{{.Type}}">{{.Type}}</span>
+        {{if .Link}}
+        <a class="notif-link" href="{{.Link}}">{{.MessageHTML}}</a>
+        {{else}}
         <span>{{.MessageHTML}}</span>
+        {{end}}
         {{if .Actions}}
         <div class="notif-actions" style="margin-left:auto; display:flex; gap:0.5rem">
           {{range .Actions}}
