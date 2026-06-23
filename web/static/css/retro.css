@@ -852,3 +852,63 @@ body.help-open { overflow: hidden; }
 }
 
 .hidden { display: none !important; }
+
+/* ===== PANEL TITLE BAR (titolo + azioni) ===== */
+.panel-title-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+}
+.share-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; padding: 0;
+  border: 1px solid rgba(255,255,255,0.45); border-radius: 6px;
+  background: rgba(255,255,255,0.18);
+  color: #fff; cursor: pointer; line-height: 1;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  transition: background 0.12s, transform 0.04s, border-color 0.12s;
+}
+.share-btn:hover { background: rgba(255,255,255,0.32); border-color: rgba(255,255,255,0.7); }
+.share-btn:active { transform: translateY(1px); }
+.share-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  background: rgba(20,35,55,0.45);
+  backdrop-filter: blur(2px);
+  animation: alertin 0.15s var(--ease);
+}
+.modal {
+  width: 100%; max-width: 420px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  border-radius: var(--radius);
+  padding: var(--panel-py) var(--panel-px);
+  box-shadow: 0 8px 30px rgba(20,35,55,0.4), inset 0 0 0 1px rgba(255,255,255,0.7);
+}
+.modal .panel-title-bar {
+  margin: calc(var(--panel-py) * -1) calc(var(--panel-px) * -1) var(--panel-py);
+}
+.modal-body label { margin-bottom: 0.35rem; }
+.share-link-row { display: flex; gap: 0.5rem; align-items: stretch; }
+.share-link-row input { flex: 1; min-width: 0; }
+.share-link-row .btn { white-space: nowrap; }
+.share-targets {
+  display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.85rem;
+}
+.share-targets .btn { flex: 1 1 auto; text-align: center; }
+.share-targets .btn:hover { text-decoration: none; }
+
+/* ===== INVITI OSPITE (visitatori non autenticati) ===== */
+.nav-actions-guest { display: flex; gap: 0.4rem; align-items: center; }
+.nav-actions-guest .btn:hover { text-decoration: none; }
+
+.guest-cta { text-align: center; padding: 0.5rem 0; }
+.guest-cta p { margin: 0 0 0.6rem; }
+.guest-cta p:first-child { font-weight: 700; color: var(--blue-dark); }
+.guest-cta-actions { display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.85rem; }
+.guest-cta-actions .btn:hover { text-decoration: none; }
+
+.commento-guest { margin-top: 0.6rem; }
+.commento-guest .btn:hover { text-decoration: none; }

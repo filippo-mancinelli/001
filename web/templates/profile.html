@@ -7,7 +7,20 @@
 
   <!-- profilo header -->
   <div class="panel">
-    <div class="panel-title">// profilo</div>
+    <div class="panel-title panel-title-bar">
+      <span>// profilo</span>
+      <button type="button" class="share-btn" onclick="openShareModal()"
+        aria-label="condividi profilo" title="condividi profilo">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+      </button>
+    </div>
     <div class="profile-header">
       <div class="avatar-lg">{{template "avatar" .Profile}}</div>
       <div class="profile-id">
@@ -34,7 +47,7 @@
       <div class="profile-actions">
         {{if .IsSelf}}
           <a href="/settings" class="btn btn-sm">[ personalizza profilo ]</a>
-        {{else}}
+        {{else if .User}}
           {{if .IsFollowing}}
           <button id="follow-btn" class="btn btn-red btn-sm"
             hx-delete="/follow/{{.Profile.Username}}"
@@ -50,6 +63,8 @@
             [ + segui ]
           </button>
           {{end}}
+        {{else}}
+          <a href="/register" class="btn btn-cyan btn-sm" title="registrati per seguire">[ + segui ]</a>
         {{end}}
       </div>
     </div>
@@ -160,6 +175,32 @@
     {{end}}
   </div>
 
+  <!-- modal condividi profilo -->
+  <div id="share-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeShareModal()">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+      <div class="panel-title panel-title-bar" id="share-modal-title">
+        <span>// condividi @{{.Profile.Username}}</span>
+        <button type="button" class="share-btn" onclick="closeShareModal()" aria-label="chiudi" title="chiudi">✕</button>
+      </div>
+      <div class="modal-body">
+        <label for="share-url">link al profilo</label>
+        <div class="share-link-row">
+          <input id="share-url" type="text" readonly value="">
+          <button type="button" class="btn btn-sm btn-cyan" onclick="copyShareUrl(this)">[ copia ]</button>
+        </div>
+        <button type="button" id="native-share-btn" class="btn btn-sm hidden" onclick="nativeShare()" style="margin-top:0.85rem;width:100%">
+          [ condividi su… ]
+        </button>
+        <div class="share-targets">
+          <a id="share-wa" class="btn btn-sm" target="_blank" rel="noopener noreferrer">whatsapp</a>
+          <a id="share-tg" class="btn btn-sm" target="_blank" rel="noopener noreferrer">telegram</a>
+          <a id="share-tw" class="btn btn-sm" target="_blank" rel="noopener noreferrer">x</a>
+          <a id="share-mail" class="btn btn-sm">email</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <script>
 function toggleRows(section, btn) {
   var rows = document.querySelectorAll('.extra-row-' + section);
@@ -172,6 +213,55 @@ function toggleRows(section, btn) {
     btn.textContent = '[ mostra di più (' + total + ') ]';
   }
 }
+
+var shareUsername = {{.Profile.Username}};
+var shareUrl = location.origin + '/@' + shareUsername;
+var shareTitle = 'pensieri // @' + shareUsername;
+var shareText = 'Dai un\'occhiata al profilo di @' + shareUsername + ' su pensieri';
+
+function openShareModal() {
+  document.getElementById('share-url').value = shareUrl;
+  var enc = encodeURIComponent(shareUrl);
+  var encText = encodeURIComponent(shareText);
+  document.getElementById('share-wa').href = 'https://wa.me/?text=' + encodeURIComponent(shareText + ' ' + shareUrl);
+  document.getElementById('share-tg').href = 'https://t.me/share/url?url=' + enc + '&text=' + encText;
+  document.getElementById('share-tw').href = 'https://twitter.com/intent/tweet?url=' + enc + '&text=' + encText;
+  document.getElementById('share-mail').href = 'mailto:?subject=' + encodeURIComponent(shareTitle) + '&body=' + encodeURIComponent(shareText + '\n' + shareUrl);
+  if (navigator.share) {
+    document.getElementById('native-share-btn').classList.remove('hidden');
+  }
+  document.getElementById('share-modal').classList.remove('hidden');
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.add('hidden');
+}
+
+function copyShareUrl(btn) {
+  var input = document.getElementById('share-url');
+  var done = function() {
+    var prev = btn.textContent;
+    btn.textContent = '[ copiato ✓ ]';
+    setTimeout(function() { btn.textContent = prev; }, 1600);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareUrl).then(done, function() {
+      input.select(); document.execCommand('copy'); done();
+    });
+  } else {
+    input.select(); document.execCommand('copy'); done();
+  }
+}
+
+function nativeShare() {
+  if (navigator.share) {
+    navigator.share({ title: shareTitle, text: shareText, url: shareUrl }).catch(function() {});
+  }
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeShareModal();
+});
 </script>
 
 </div>

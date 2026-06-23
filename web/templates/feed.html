@@ -25,17 +25,19 @@
     </div>
     {{end}}
   </div>
+  {{end}}
 
   {{if .Pubblici}}
   <div class="panel">
     <div class="panel-title">// pensieri pubblici</div>
-    {{if not .Pensieri}}<div class="empty-hint" style="margin-bottom:0.85rem">non segui ancora nessuno — ecco cosa scrivono gli altri.</div>{{end}}
+    {{if and .User (not .Pensieri)}}<div class="empty-hint" style="margin-bottom:0.85rem">non segui ancora nessuno — ecco cosa scrivono gli altri.</div>{{end}}
     {{range .Pubblici}}
       {{template "pensiero-card" .}}
     {{end}}
   </div>
   {{end}}
 
+  {{if .User}}
   <div class="panel">
     <div class="panel-title">// trova utenti</div>
     <form method="GET" action="/search" style="display:flex; gap:0.5rem">
@@ -43,6 +45,7 @@
       <button class="btn btn-cyan">cerca</button>
     </form>
   </div>
+  {{end}}
 </div>
 {{template "statusbar" .}}
 </body>

@@ -54,6 +54,11 @@
   {{else}}
   <div class="commenti-vuoto">Chi si alza presto prende il verme.</div>
   {{end}}
+  {{if .Anon}}
+  <div class="commento-guest">
+    <a href="/register" class="btn btn-cyan btn-sm">[ registrati per commentare ]</a>
+  </div>
+  {{else}}
   <form class="commento-form"
         hx-post="/pensieri/{{.PensieroID}}/commenti"
         hx-target="#commenti-{{.PensieroID}}"
@@ -62,6 +67,7 @@
               placeholder="scrivi un commento..." required></textarea>
     <button class="btn btn-cyan btn-sm" type="submit">[ invia ]</button>
   </form>
+  {{end}}
 </div>
 {{end}}
 
