@@ -172,28 +172,38 @@ func salvaVersione(ctx context.Context, pensieroID string, audienceID *string, p
 
 // GetPensiero mostra un singolo pensiero "a schermo intero", su una pagina
 // dedicata che contiene solo quel pensiero con il suo thread di commenti.
-// È la destinazione dei link nelle notifiche (nuovo pensiero, DNA, commento…),
-// utile per raggiungere direttamente un pensiero anche quando il thread è lungo.
+// È la destinazione dei link nelle notifiche (nuovo pensiero, DNA, commento…)
+// e dei link condivisi (WhatsApp, Telegram…), quindi è una pagina pubblica:
+// chi non ha un account ne legge la versione pubblica, esattamente come i
+// pensieri che vede nel feed, senza essere dirottato sulla registrazione.
 func GetPensiero(c *gin.Context) {
-	user := c.MustGet("user").(models.User)
+	user, auth := currentViewer(c)
 	pensieroID := c.Param("id")
 
 	// risolto per il viewer: l'autore vede sempre la propria versione diretta,
-	// gli altri seguono la normale logica di visibilità.
+	// gli altri seguono la normale logica di visibilità (per un visitatore
+	// anonimo si riduce sempre alla versione pubblica).
 	rt, err := risolviPensiero(context.Background(), pensieroID, user.ID)
 	if err != nil {
-		c.HTML(http.StatusNotFound, "pensiero.html", gin.H{"User": user})
+		c.HTML(http.StatusNotFound, "pensiero.html", gin.H{"User": viewerForTemplate(user, auth)})
 		return
 	}
 	rt.CanModerate = user.IsAdmin
+	// senza sessione le azioni che richiedono un account (DNA, "sono curioso",
+	// commenti) diventano un invito a registrarsi.
+	rt.Anon = !auth
 
 	// il contenuto vuoto significa che il viewer non ha accesso a nessuna versione
 	if rt.Content == "" {
-		c.HTML(http.StatusNotFound, "pensiero.html", gin.H{"User": user})
+		c.HTML(http.StatusNotFound, "pensiero.html", gin.H{"User": viewerForTemplate(user, auth)})
 		return
 	}
 
-	c.HTML(http.StatusOK, "pensiero.html", gin.H{"User": user, "Pensiero": rt})
+	c.HTML(http.StatusOK, "pensiero.html", gin.H{
+		"User":     viewerForTemplate(user, auth),
+		"Pensiero": rt,
+		"Anon":     !auth,
+	})
 }
 
 // GetPensieroVersione ri-renderizza la card di un pensiero mostrando una
