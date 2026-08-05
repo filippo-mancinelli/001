@@ -160,13 +160,15 @@ func main() {
 	r.GET("/reset", handlers.GetReset)
 	r.POST("/reset", handlers.PostReset)
 
-	// pagine pubbliche: feed (pensieri pubblici), profili e lettura commenti
-	// sono visibili anche senza login. OptionalAuth popola l'utente se la
-	// sessione è valida, altrimenti prosegue come visitatore anonimo.
+	// pagine pubbliche: feed (pensieri pubblici), profili, pagina del singolo
+	// pensiero (è la destinazione dei link condivisi) e lettura commenti sono
+	// visibili anche senza login. OptionalAuth popola l'utente se la sessione è
+	// valida, altrimenti prosegue come visitatore anonimo.
 	pub := r.Group("/", middleware.OptionalAuth())
 	{
 		pub.GET("/", handlers.GetFeed)
 		pub.GET("/@:username", handlers.GetProfile)
+		pub.GET("/pensieri/:id", handlers.GetPensiero)
 		pub.GET("/pensieri/:id/commenti", handlers.GetCommenti)
 		pub.GET("/pensieri/:id/commenti/chiudi", handlers.GetCommentiChiudi)
 		pub.GET("/users/:username/mini", handlers.GetUserMini)
@@ -191,7 +193,6 @@ func main() {
 		auth.POST("/pensieri", handlers.PostPensiero)
 		auth.GET("/pensieri/nuovo", handlers.GetEditorPensiero)
 		auth.GET("/pensieri/annulla", handlers.AnnullaEditorPensiero)
-		auth.GET("/pensieri/:id", handlers.GetPensiero)
 		auth.GET("/pensieri/:id/versione", handlers.GetPensieroVersione)
 		auth.GET("/pensieri/:id/modifica", handlers.GetEditorPensiero)
 		auth.POST("/pensieri/:id/versioni", handlers.PostVersionePensiero)

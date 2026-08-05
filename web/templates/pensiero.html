@@ -14,6 +14,18 @@
            hx-trigger="load"
            hx-target="#commenti-{{.Pensiero.PensieroID}}"
            hx-swap="innerHTML"></div>
+      {{if .Anon}}
+      <!-- visitatore senza account: legge la versione pubblica e viene invitato
+           a registrarsi per il resto (versione personale, DNA, commenti). -->
+      <div class="empty" style="margin-top:1rem">
+        stai leggendo la versione pubblica.<br>
+        <span class="empty-hint">registrati per chiedere la versione personale, commentare e lasciare il tuo DNA.</span>
+        <div style="margin-top:0.85rem">
+          <a href="/register" class="btn btn-sm btn-cyan">[ registrati ]</a>
+          <a href="/login" class="btn btn-sm">[ accedi ]</a>
+        </div>
+      </div>
+      {{end}}
     {{else}}
     <div class="empty">
       pensiero non trovato.<br>
