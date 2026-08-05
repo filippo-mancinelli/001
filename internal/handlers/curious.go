@@ -13,14 +13,22 @@ func PostCurious(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 	pensieroID := c.Param("id")
 
-	// recupera il subject del pensiero per inviargli la notifica
-	var subjectID, authorID string
+	// Recupera il soggetto del pensiero per inviargli la notifica. Se il soggetto
+	// è un nome libero non ha un account a cui scrivere né un modo per accettare:
+	// la richiesta va all'autore, l'unico che può rivelare la versione personale.
+	var subjectID *string
+	var subjectName, authorID string
 	err := db.Pool.QueryRow(context.Background(),
-		`SELECT subject_id, author_id FROM pensieri WHERE id = $1`, pensieroID,
-	).Scan(&subjectID, &authorID)
+		`SELECT subject_id, COALESCE(subject_name, ''), author_id FROM pensieri WHERE id = $1`, pensieroID,
+	).Scan(&subjectID, &subjectName, &authorID)
 	if err != nil {
 		c.String(http.StatusNotFound, "pensiero non trovato")
 		return
+	}
+
+	destinatario := authorID
+	if subjectID != nil {
+		destinatario = *subjectID
 	}
 
 	_, err = db.Pool.Exec(context.Background(), `
@@ -40,13 +48,18 @@ func PostCurious(c *gin.Context) {
 		pensieroID, user.ID,
 	).Scan(&reqID)
 
-	// notifica al subject
-	notify(subjectID, "curious_request", map[string]string{
-		"requester_id":   user.ID,
-		"requester_name": user.Username,
-		"pensiero_id":    pensieroID,
-		"request_id":     reqID,
-	})
+	// notifica a chi può rivelare la versione personale (mai a sé stessi).
+	// subject_name, presente solo sui nomi liberi, dice al destinatario di chi
+	// si sta parlando: senza, la notifica leggerebbe "cosa pensi davvero di te".
+	if destinatario != user.ID {
+		notify(destinatario, "curious_request", map[string]string{
+			"requester_id":   user.ID,
+			"requester_name": user.Username,
+			"pensiero_id":    pensieroID,
+			"request_id":     reqID,
+			"subject_name":   subjectName,
+		})
+	}
 
 	// risposta HTMX: rimuove le azioni e mostra la clessidra in alto a destra
 	// (posizionata in modo assoluto rispetto alla card)
@@ -73,7 +86,7 @@ func PostCuriousAccept(c *gin.Context) {
 		SELECT cr.requester_id, cr.pensiero_id
 		FROM curious_requests cr
 		JOIN pensieri t ON t.id = cr.pensiero_id
-		WHERE cr.id = $1 AND t.subject_id = $2
+		WHERE cr.id = $1 AND `+puoRivelare("$2")+`
 	`, reqID, user.ID).Scan(&requesterID, &pensieroID)
 	if err != nil {
 		c.String(http.StatusForbidden, "non autorizzato")
@@ -105,7 +118,7 @@ func PostCuriousReject(c *gin.Context) {
 		SELECT EXISTS(
 			SELECT 1 FROM curious_requests cr
 			JOIN pensieri t ON t.id = cr.pensiero_id
-			WHERE cr.id = $1 AND t.subject_id = $2
+			WHERE cr.id = $1 AND `+puoRivelare("$2")+`
 		)
 	`, reqID, user.ID).Scan(&exists)
 

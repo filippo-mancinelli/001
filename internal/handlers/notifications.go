@@ -89,7 +89,14 @@ func GetNotifications(c *gin.Context) {
 		var msgHTML string
 		switch n.Type {
 		case "curious_request":
-			msgHTML = mention(p["requester_name"]) + " vuole sapere cosa pensi davvero di te"
+			// Sui pensieri scritti su un nome libero la richiesta arriva
+			// all'autore, non al soggetto: diciamogli di chi si parla.
+			if nome := p["subject_name"]; nome != "" {
+				msgHTML = mention(p["requester_name"]) + " vuole sapere cosa pensi davvero di " +
+					template.HTMLEscapeString(nome)
+			} else {
+				msgHTML = mention(p["requester_name"]) + " vuole sapere cosa pensi davvero di te"
+			}
 			nv.Actions = []notifAction{
 				{Label: "[ accetta ]", URL: "/curious/" + p["request_id"] + "/accept", Class: "btn-cyan"},
 				{Label: "[ rifiuta ]", URL: "/curious/" + p["request_id"] + "/reject", Class: "btn-red"},

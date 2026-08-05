@@ -82,11 +82,11 @@ func PostCommento(c *gin.Context) {
 		content = string([]rune(content)[:maxLunghezzaCommento])
 	}
 
-	// recupera autore e subject del pensiero (anche per validarne l'esistenza)
-	var authorID, subjectID string
+	// recupera l'autore del pensiero (anche per validarne l'esistenza)
+	var authorID string
 	err := db.Pool.QueryRow(context.Background(),
-		`SELECT author_id, subject_id FROM pensieri WHERE id = $1`, pensieroID,
-	).Scan(&authorID, &subjectID)
+		`SELECT author_id FROM pensieri WHERE id = $1`, pensieroID,
+	).Scan(&authorID)
 	if err != nil {
 		c.String(http.StatusNotFound, "pensiero non trovato")
 		return

@@ -18,12 +18,11 @@ func GetFeed(c *gin.Context) {
 	if auth {
 		rows, err := db.Pool.Query(context.Background(), `
 			SELECT DISTINCT ON (t.id)
-				t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
+				`+colonneIdentita+`,
 				`+colonneRisolte("$1")+`
 			FROM pensieri t
 			JOIN follows f ON f.following_id = t.author_id AND f.follower_id = $1
-			JOIN users u_a ON u_a.id = t.author_id
-			JOIN users u_s ON u_s.id = t.subject_id
+			`+joinUtenti+`
 			ORDER BY t.id, t.updated_at DESC
 		`, user.ID)
 		if err != nil {
@@ -33,9 +32,10 @@ func GetFeed(c *gin.Context) {
 		defer rows.Close()
 
 		for rows.Next() {
-			var rt models.PensieroRisolto
-			rows.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt, &rt.Crowned)
+			rt, err := scanPensiero(rows)
+			if err != nil {
+				continue
+			}
 			rt.CanModerate = user.IsAdmin
 			if rt.Content != "" {
 				pensieri = append(pensieri, rt)
@@ -48,16 +48,15 @@ func GetFeed(c *gin.Context) {
 	// sempre vero, quindi mostra tutti i pensieri pubblici recenti.
 	var pubblici []models.PensieroRisolto
 	rows2, err2 := db.Pool.Query(context.Background(), `
-		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
+		SELECT `+colonneIdentita+`,
 			`+colonneRisolte("$1")+`
 		FROM pensieri t
-		JOIN users u_a ON u_a.id = t.author_id
-		JOIN users u_s ON u_s.id = t.subject_id
+		`+joinUtenti+`
 		WHERE t.author_id <> $1
 		  AND NOT EXISTS (SELECT 1 FROM follows WHERE follower_id = $1 AND following_id = t.author_id)
 		  AND EXISTS (
 		    SELECT 1 FROM versioni_pensiero vp
-		    WHERE vp.pensiero_id = t.id AND vp.audience_id IS NULL
+		    WHERE vp.pensiero_id = t.id AND vp.audience_id IS NULL AND NOT vp.personale
 		  )
 		ORDER BY t.crowned DESC, t.updated_at DESC
 		LIMIT 30
@@ -65,9 +64,10 @@ func GetFeed(c *gin.Context) {
 	if err2 == nil {
 		defer rows2.Close()
 		for rows2.Next() {
-			var rt models.PensieroRisolto
-			rows2.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-				&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt, &rt.Crowned)
+			rt, err := scanPensiero(rows2)
+			if err != nil {
+				continue
+			}
 			rt.CanModerate = user.IsAdmin
 			rt.Anon = !auth
 			if rt.Content != "" {
@@ -145,24 +145,10 @@ func GetProfile(c *gin.Context) {
 	// pensieri scritti dal profilo, risolti per il viewer corrente.
 	// l'autore vede sempre tutto ciò che ha scritto (versione diretta inclusa).
 	righe, _ := db.Pool.Query(context.Background(), `
-		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
-			CASE WHEN t.author_id = $2 THEN
-				COALESCE(
-					(SELECT content FROM versioni_pensiero WHERE pensiero_id = t.id AND audience_id = t.subject_id),
-					(SELECT content FROM versioni_pensiero WHERE pensiero_id = t.id AND audience_id IS NULL)
-				)
-			ELSE `+resolviContenuto("$2")+` END AS content,
-			(t.author_id = $2 OR `+isDiretta("$2")+`) AS is_direct,
-			(t.author_id <> $2 AND `+puoCurioso("$2")+`) AS can_send_curious,
-			`+curiosoInAttesa("$2")+` AS curious_pending,
-			`+contaCommenti()+` AS comment_count,
-			`+contaDna()+` AS dna_count,
-			`+dnaFatto("$2")+` AS dna_done,
-			t.created_at AS created_at,
-			t.crowned AS crowned
+		SELECT `+colonneIdentita+`,
+			`+colonneAutore("$2")+`
 		FROM pensieri t
-		JOIN users u_a ON u_a.id = t.author_id
-		JOIN users u_s ON u_s.id = t.subject_id
+		`+joinUtenti+`
 		WHERE t.author_id = $1
 		ORDER BY t.updated_at DESC
 	`, profile.ID, user.ID)
@@ -170,9 +156,10 @@ func GetProfile(c *gin.Context) {
 
 	var pensieri []models.PensieroRisolto
 	for righe.Next() {
-		var rt models.PensieroRisolto
-		righe.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt, &rt.Crowned)
+		rt, err := scanPensiero(righe)
+		if err != nil {
+			continue
+		}
 		rt.CanModerate = user.IsAdmin
 		rt.Anon = !auth
 		if rt.Content != "" {
@@ -183,11 +170,10 @@ func GetProfile(c *gin.Context) {
 	// pensieri scritti SU questo profilo (dove è il subject), risolti per il
 	// viewer corrente con la logica di visibilità standard.
 	righeSu, _ := db.Pool.Query(context.Background(), `
-		SELECT t.id, t.author_id, u_a.username, t.subject_id, u_s.username,
+		SELECT `+colonneIdentita+`,
 			`+colonneRisolte("$2")+`
 		FROM pensieri t
-		JOIN users u_a ON u_a.id = t.author_id
-		JOIN users u_s ON u_s.id = t.subject_id
+		`+joinUtenti+`
 		WHERE t.subject_id = $1
 		ORDER BY t.updated_at DESC
 	`, profile.ID, user.ID)
@@ -195,9 +181,10 @@ func GetProfile(c *gin.Context) {
 
 	var pensieriSu []models.PensieroRisolto
 	for righeSu.Next() {
-		var rt models.PensieroRisolto
-		righeSu.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
-			&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount, &rt.DnaCount, &rt.DnaDone, &rt.CreatedAt, &rt.Crowned)
+		rt, err := scanPensiero(righeSu)
+		if err != nil {
+			continue
+		}
 		rt.CanModerate = user.IsAdmin
 		rt.Anon = !auth
 		if rt.Content != "" {

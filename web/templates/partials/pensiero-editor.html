@@ -4,11 +4,34 @@
   <form id="pensiero-form" hx-post="/pensieri" hx-target="#pensiero-editor-area" hx-swap="innerHTML">
     <div class="form-group">
       <label>su chi scrivi</label>
-      <select name="subject_id" required>
-        {{range .Following}}
-        <option value="{{.ID}}">@{{.Username}}</option>
+
+      <!-- il soggetto è un utente che segui oppure una persona senza account -->
+      <div class="soggetto-switch" role="tablist">
+        <button type="button" class="soggetto-tab{{if not .ModoLibero}} attiva{{end}}" data-target="utente"
+          onclick="switchSoggetto(this, 'utente')">un utente</button>
+        <button type="button" class="soggetto-tab{{if .ModoLibero}} attiva{{end}}" data-target="libero"
+          onclick="switchSoggetto(this, 'libero')">un nome</button>
+      </div>
+
+      <div class="soggetto-pannello{{if .ModoLibero}} hidden{{end}}" data-soggetto="utente">
+        <select name="subject_id"{{if .ModoLibero}} disabled{{end}}>
+          {{range .Following}}
+          <option value="{{.ID}}">@{{.Username}}</option>
+          {{end}}
+        </select>
+        {{if not .Following}}
+        <div class="versione-hint">non segui ancora nessuno — scrivi un nome libero.</div>
         {{end}}
-      </select>
+      </div>
+
+      <div class="soggetto-pannello{{if not .ModoLibero}} hidden{{end}}" data-soggetto="libero">
+        <input type="text" name="subject_name" maxlength="{{.MaxNomeLibero}}"
+          placeholder="nome, cognome, soprannome..."{{if not .ModoLibero}} disabled{{end}}>
+        <div class="versione-hint">
+          una persona senza account: non riceve notifiche e non ha un profilo.
+          La versione personale la riveli tu a chi te la chiede.
+        </div>
+      </div>
     </div>
 
     <!-- switch tra la versione pubblica e quella personale -->
@@ -48,6 +71,21 @@
   if (!form || form.dataset.bound) return;
   form.dataset.bound = '1';
 
+  // Il soggetto è un utente registrato oppure un nome libero: disabilitiamo il
+  // campo del pannello nascosto così ne viene inviato sempre e solo uno.
+  window.switchSoggetto = function (btn, target) {
+    form.querySelectorAll('.soggetto-tab').forEach(function (t) {
+      t.classList.toggle('attiva', t.dataset.target === target);
+    });
+    form.querySelectorAll('.soggetto-pannello').forEach(function (p) {
+      var attivo = p.dataset.soggetto === target;
+      p.classList.toggle('hidden', !attivo);
+      p.querySelectorAll('select, input').forEach(function (campo) {
+        campo.disabled = !attivo;
+      });
+    });
+  };
+
   window.switchVersione = function (btn, target) {
     form.querySelectorAll('.versione-tab').forEach(function (t) {
       t.classList.toggle('attiva', t.dataset.target === target);
@@ -62,14 +100,27 @@
       form.querySelector('[name=content_public]').value;
   };
 
-  // Entrambe le versioni sono obbligatorie: blocchiamo l'invio HTMX se manca
-  // una delle due e portiamo l'utente sul pannello da completare.
+  // Serve un soggetto ed entrambe le versioni: blocchiamo l'invio HTMX se
+  // manca qualcosa e portiamo l'utente sul pannello da completare.
   form.addEventListener('htmx:beforeRequest', function (e) {
     // ignora le richieste di altri elementi (es. il pulsante "annulla")
     if (e.detail.elt !== form) return;
+    var utente = form.querySelector('[name=subject_id]');
+    var nome = form.querySelector('[name=subject_name]');
     var pub = form.querySelector('[name=content_public]').value.trim();
     var pers = form.querySelector('[name=content_personal]').value.trim();
     var err = form.querySelector('.versione-errore');
+
+    var soggetto = nome.disabled ? utente.value : nome.value.trim();
+    if (!soggetto) {
+      e.preventDefault();
+      err.classList.remove('hidden');
+      err.textContent = nome.disabled
+        ? 'scegli un utente, oppure scrivi un nome.'
+        : 'scrivi il nome della persona.';
+      return;
+    }
+
     if (pub && pers) {
       err.classList.add('hidden');
       return;

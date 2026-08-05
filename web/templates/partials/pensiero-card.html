@@ -49,6 +49,7 @@
       </details>
     </span>
     <span style="color:var(--text-dim)">su</span>
+    {{if .SoggettoRegistrato}}
     <span class="user-tooltip-wrap">
       <details class="user-tooltip">
         <summary class="subject">@{{.SubjectName}}</summary>
@@ -59,6 +60,9 @@
              hx-swap="innerHTML"></div>
       </details>
     </span>
+    {{else}}
+    <span class="subject subject-libero" title="persona senza account">{{.SubjectName}}</span>
+    {{end}}
     {{if .IsDirect}}
     <span class="badge-direct">versione personale</span>
     {{if not .Anon}}
