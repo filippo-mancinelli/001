@@ -2,12 +2,16 @@ package models
 
 import "time"
 
+// Pensiero è il pensiero di un autore su un soggetto. Il soggetto è un utente
+// registrato (SubjectID) oppure una persona senza account, indicata con un nome
+// libero (SubjectName): i due campi si escludono a vicenda.
 type Pensiero struct {
-	ID        string    `db:"id"`
-	AuthorID  string    `db:"author_id"`
-	SubjectID string    `db:"subject_id"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+	ID          string    `db:"id"`
+	AuthorID    string    `db:"author_id"`
+	SubjectID   string    `db:"subject_id"`
+	SubjectName string    `db:"subject_name"`
+	CreatedAt   time.Time `db:"created_at"`
+	UpdatedAt   time.Time `db:"updated_at"`
 }
 
 type VersionePensiero struct {
@@ -20,9 +24,11 @@ type VersionePensiero struct {
 
 // PensieroRisolto è un pensiero già risolto per un viewer specifico
 type PensieroRisolto struct {
-	PensieroID  string
-	AuthorID    string
-	AuthorName  string
+	PensieroID string
+	AuthorID   string
+	AuthorName string
+	// SubjectID è vuoto quando il pensiero è scritto su un nome libero, cioè su
+	// una persona che non ha un account (e quindi nessun profilo da linkare).
 	SubjectID   string
 	SubjectName string
 	Content     string
@@ -59,6 +65,12 @@ type PensieroRisolto struct {
 	// le azioni che richiedono un account (DNA, "sono curioso", commenti) vengono
 	// sostituite da un invito a registrarsi.
 	Anon bool
+}
+
+// SoggettoRegistrato indica se il soggetto del pensiero ha un account, e quindi
+// un profilo da linkare. È falso per i pensieri scritti su un nome libero.
+func (p PensieroRisolto) SoggettoRegistrato() bool {
+	return p.SubjectID != ""
 }
 
 // Commento è un commento di un utente su un pensiero, già risolto per la vista
