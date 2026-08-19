@@ -3,12 +3,15 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"pensieri/internal/db"
 	"pensieri/internal/models"
+	"pensieri/internal/storage"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -79,6 +82,20 @@ func PostPensiero(c *gin.Context) {
 		return
 	}
 
+	imageURL, imageErr := uploadPensieroImageIfPresent(c, user.ID)
+	if imageErr != "" {
+		c.String(http.StatusBadRequest, imageErr)
+		return
+	}
+	if imageURL != "" {
+		if oldImage, err := aggiornaImmaginePensiero(ctx, pensieroID, imageURL); err != nil {
+			c.String(http.StatusInternalServerError, "errore salvataggio immagine")
+			return
+		} else if oldImage != "" {
+			deletePensieroImage(oldImage)
+		}
+	}
+
 	// Versione pubblica: audience_id NULL, letta da chiunque.
 	if err := salvaVersione(ctx, pensieroID, nil, false, contentPublic); err != nil {
 		c.String(http.StatusInternalServerError, "errore salvataggio versione pubblica")
@@ -112,6 +129,72 @@ func PostPensiero(c *gin.Context) {
 			[ pensiero salvato ] — <a href="">ricarica la pagina</a>
 		</div>
 	`))
+}
+
+// maxPensieroImageBytes limita l’immagine allegata a un pensiero (8 MB).
+const maxPensieroImageBytes = 8 << 20
+
+// uploadPensieroImageIfPresent accetta al massimo un file dal campo "image_file"
+// e restituisce l’URL relativo /media/pensieri/<file> da salvare sul pensiero.
+func uploadPensieroImageIfPresent(c *gin.Context, userID string) (string, string) {
+	form, err := c.MultipartForm()
+	if err != nil {
+		return "", ""
+	}
+	files := form.File["image_file"]
+	if len(files) == 0 {
+		return "", ""
+	}
+	if len(files) > 1 {
+		return "", "puoi caricare al massimo 1 immagine"
+	}
+	if !storage.Configured() {
+		return "", "upload immagini non disponibile"
+	}
+	fh := files[0]
+	if fh.Size > maxPensieroImageBytes {
+		return "", "immagine troppo grande (max 8 MB)"
+	}
+	f, err := fh.Open()
+	if err != nil {
+		return "", "errore upload immagine"
+	}
+	defer f.Close()
+	head := make([]byte, 512)
+	n, _ := f.Read(head)
+	contentType := http.DetectContentType(head[:n])
+	ext, ok := avatarExt[contentType]
+	if !ok {
+		return "", "formato immagine non valido"
+	}
+	if _, err := f.Seek(0, 0); err != nil {
+		return "", "errore upload immagine"
+	}
+	name := fmt.Sprintf("%s-%s.%s", userID, uuid.NewString(), ext)
+	if err := storage.Upload(c.Request.Context(), "pensieri/"+name, contentType, f); err != nil {
+		return "", "errore upload immagine"
+	}
+	return "/media/pensieri/" + name, ""
+}
+
+func aggiornaImmaginePensiero(ctx context.Context, pensieroID, imageURL string) (string, error) {
+	var oldImage string
+	err := db.Pool.QueryRow(ctx, `
+		SELECT COALESCE(image_url, '') FROM pensieri WHERE id = $1
+	`, pensieroID).Scan(&oldImage)
+	if err != nil {
+		return "", err
+	}
+	_, err = db.Pool.Exec(ctx, `
+		UPDATE pensieri SET image_url = $2, updated_at = NOW() WHERE id = $1
+	`, pensieroID, imageURL)
+	return oldImage, err
+}
+
+func deletePensieroImage(imageURL string) {
+	if storage.Configured() && strings.HasPrefix(imageURL, "/media/pensieri/") {
+		_ = storage.Delete(context.Background(), "pensieri/"+strings.TrimPrefix(imageURL, "/media/pensieri/"))
+	}
 }
 
 // upsertPensiero recupera (o crea) il pensiero di un autore su un soggetto e ne

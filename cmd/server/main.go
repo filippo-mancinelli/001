@@ -7,13 +7,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sort"
-	"strings"
 	"pensieri/internal/assets"
 	"pensieri/internal/db"
 	"pensieri/internal/handlers"
 	"pensieri/internal/middleware"
 	"pensieri/internal/storage"
+	"sort"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -144,6 +144,7 @@ func main() {
 
 	// proxy pubblico verso S3 per le immagini avatar caricate (bucket privato)
 	r.GET("/media/avatars/:name", handlers.GetAvatarMedia)
+	r.GET("/media/pensieri/:name", handlers.GetPensieroMedia)
 
 	tmpl := template.Must(template.New("").Funcs(templateFuncs).ParseGlob("web/templates/*.html"))
 	tmpl = template.Must(tmpl.ParseGlob("web/templates/partials/*.html"))

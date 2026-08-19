@@ -60,7 +60,8 @@ const esistePersonale = `EXISTS (SELECT 1 FROM versioni_pensiero
 // subject_id è la stringa vuota e il nome arriva da t.subject_name.
 const colonneIdentita = `t.id, t.author_id, u_a.username,
 	COALESCE(t.subject_id::text, '') AS subject_id,
-	COALESCE(u_s.username, t.subject_name, '') AS subject_name`
+	COALESCE(u_s.username, t.subject_name, '') AS subject_name,
+	COALESCE(t.image_url, '') AS image_url`
 
 // joinUtenti collega autore e soggetto. Il soggetto è in LEFT JOIN perché i
 // pensieri scritti su un nome libero non hanno un utente collegato.
@@ -182,7 +183,7 @@ type rowScanner interface {
 // colonneRisolte (o colonneAutore, che espone le stesse colonne).
 func scanPensiero(row rowScanner) (models.PensieroRisolto, error) {
 	var rt models.PensieroRisolto
-	err := row.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName,
+	err := row.Scan(&rt.PensieroID, &rt.AuthorID, &rt.AuthorName, &rt.SubjectID, &rt.SubjectName, &rt.ImageURL,
 		&rt.Content, &rt.IsDirect, &rt.CanSendCurious, &rt.CuriousPending, &rt.CommentCount,
 		&rt.DnaCount, &rt.DnaDone, &rt.CreatedAt, &rt.Crowned)
 	return rt, err
