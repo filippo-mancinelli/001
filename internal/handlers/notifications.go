@@ -14,9 +14,10 @@ import (
 
 type notifView struct {
 	models.Notification
-	Message     string
-	MessageHTML template.HTML
-	Actions     []notifAction
+	Message       string
+	MessageHTML   template.HTML
+	Actions       []notifAction
+	CuriousStatus string
 	// Link è la destinazione a cui portare l'utente quando clicca la notifica
 	// (es. il singolo pensiero a schermo intero, oppure un profilo). Vuoto = nessun link.
 	Link string
@@ -52,10 +53,11 @@ func GetNotifications(c *gin.Context) {
 	user := c.MustGet("user").(models.User)
 
 	rows, err := db.Pool.Query(context.Background(), `
-		SELECT id, user_id, type, payload, read, created_at
-		FROM notifications
-		WHERE user_id = $1
-		ORDER BY created_at DESC
+		SELECT n.id, n.user_id, n.type, n.payload, n.read, n.created_at, COALESCE(cr.status, '')
+		FROM notifications n
+		LEFT JOIN curious_requests cr ON cr.id::text = n.payload->>'request_id'
+		WHERE n.user_id = $1
+		ORDER BY n.created_at DESC
 		LIMIT 50
 	`, user.ID)
 	if err != nil {
@@ -67,9 +69,10 @@ func GetNotifications(c *gin.Context) {
 	var notifs []notifView
 	for rows.Next() {
 		var n models.Notification
-		rows.Scan(&n.ID, &n.UserID, &n.Type, &n.Payload, &n.Read, &n.CreatedAt)
+		var curiousStatus string
+		rows.Scan(&n.ID, &n.UserID, &n.Type, &n.Payload, &n.Read, &n.CreatedAt, &curiousStatus)
 
-		nv := notifView{Notification: n}
+		nv := notifView{Notification: n, CuriousStatus: curiousStatus}
 		var p map[string]string
 		json.Unmarshal(n.Payload, &p)
 
@@ -97,9 +100,18 @@ func GetNotifications(c *gin.Context) {
 			} else {
 				msgHTML = mention(p["requester_name"]) + " vuole sapere cosa pensi davvero di te"
 			}
-			nv.Actions = []notifAction{
-				{Label: "[ accetta ]", URL: "/curious/" + p["request_id"] + "/accept", Class: "btn-cyan"},
-				{Label: "[ rifiuta ]", URL: "/curious/" + p["request_id"] + "/reject", Class: "btn-red"},
+			switch curiousStatus {
+			case "pending":
+				nv.Actions = []notifAction{
+					{Label: "[ accetta ]", URL: "/curious/" + p["request_id"] + "/accept", Class: "btn-cyan"},
+					{Label: "[ rifiuta ]", URL: "/curious/" + p["request_id"] + "/reject", Class: "btn-red"},
+				}
+			case "accepted":
+				msgHTML += " — richiesta già accettata"
+			case "rejected":
+				msgHTML += " — richiesta rifiutata"
+			default:
+				msgHTML += " — richiesta non più disponibile"
 			}
 		case "curious_accepted":
 			msgHTML = mention(p["accepted_by"]) + " ha accettato — puoi ora vedere il pensiero diretto"

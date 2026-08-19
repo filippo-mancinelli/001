@@ -86,7 +86,7 @@ func PostCuriousAccept(c *gin.Context) {
 		SELECT cr.requester_id, cr.pensiero_id
 		FROM curious_requests cr
 		JOIN pensieri t ON t.id = cr.pensiero_id
-		WHERE cr.id = $1 AND `+puoRivelare("$2")+`
+		WHERE cr.id = $1 AND cr.status = 'pending' AND `+puoRivelare("$2")+`
 	`, reqID, user.ID).Scan(&requesterID, &pensieroID)
 	if err != nil {
 		c.String(http.StatusForbidden, "non autorizzato")
@@ -94,7 +94,7 @@ func PostCuriousAccept(c *gin.Context) {
 	}
 
 	db.Pool.Exec(context.Background(),
-		`UPDATE curious_requests SET status = 'accepted' WHERE id = $1`, reqID)
+		`UPDATE curious_requests SET status = 'accepted' WHERE id = $1 AND status = 'pending'`, reqID)
 
 	// notifica al requester
 	notify(requesterID, "curious_accepted", map[string]string{
@@ -118,7 +118,7 @@ func PostCuriousReject(c *gin.Context) {
 		SELECT EXISTS(
 			SELECT 1 FROM curious_requests cr
 			JOIN pensieri t ON t.id = cr.pensiero_id
-			WHERE cr.id = $1 AND `+puoRivelare("$2")+`
+			WHERE cr.id = $1 AND cr.status = 'pending' AND `+puoRivelare("$2")+`
 		)
 	`, reqID, user.ID).Scan(&exists)
 
@@ -128,7 +128,7 @@ func PostCuriousReject(c *gin.Context) {
 	}
 
 	db.Pool.Exec(context.Background(),
-		`UPDATE curious_requests SET status = 'rejected' WHERE id = $1`, reqID)
+		`UPDATE curious_requests SET status = 'rejected' WHERE id = $1 AND status = 'pending'`, reqID)
 
 	c.Data(http.StatusOK, "text/html", []byte(`
 		<div class="notif-row" style="color:var(--text-dim); font-size:0.8rem">
