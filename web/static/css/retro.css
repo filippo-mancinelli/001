@@ -578,6 +578,7 @@ textarea { resize: vertical; min-height: 84px; line-height: 1.6; }
 .notif-type[data-type="curious_accepted"] { border-color: #3ab8e8; box-shadow: inset 0 1px 0 #fff, 0 0 0 1px #3ab8e840; }
 /* @username in grassetto arancione nei messaggi notifica */
 .notif-row .notif-mention { color: #e07b39; font-weight: 700; }
+.notif-date { margin-left: auto; color: var(--text-dim); font-size: 0.68rem; white-space: nowrap; }
 /* notifica cliccabile: l'intero messaggio porta al pensiero/profilo collegato */
 .notif-clickable { cursor: pointer; }
 .notif-link { color: inherit; display: inline-block; }
@@ -882,6 +883,7 @@ input:disabled, textarea:disabled {
 
   .notif-row { flex-wrap: wrap; }
   .notif-row .notif-type { min-width: 0; }
+  .notif-date { margin-left: 0; }
   .notif-actions { margin-left: 0 !important; width: 100%; margin-top: 0.4rem; }
 
   .statusbar .container { gap: 0.5rem; font-size: 0.66rem; justify-content: center; }
