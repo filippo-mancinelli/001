@@ -10,6 +10,7 @@ type Pensiero struct {
 	AuthorID    string    `db:"author_id"`
 	SubjectID   string    `db:"subject_id"`
 	SubjectName string    `db:"subject_name"`
+	ImageURL    string    `db:"image_url"`
 	CreatedAt   time.Time `db:"created_at"`
 	UpdatedAt   time.Time `db:"updated_at"`
 }
@@ -31,6 +32,7 @@ type PensieroRisolto struct {
 	// una persona che non ha un account (e quindi nessun profilo da linkare).
 	SubjectID   string
 	SubjectName string
+	ImageURL    string // immagine opzionale allegata al pensiero
 	Content     string
 	CreatedAt   time.Time // istante di creazione del pensiero
 	IsDirect    bool      // true se il viewer sta vedendo la versione diretta (audience=subject)

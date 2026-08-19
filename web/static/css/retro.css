@@ -1031,3 +1031,18 @@ body.help-open { overflow: hidden; }
 
 .commento-guest { margin-top: 0.6rem; }
 .commento-guest .btn:hover { text-decoration: none; }
+
+.pensiero-immagine {
+  margin-top: 0.75rem;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.35);
+  padding: 0.35rem;
+}
+
+.pensiero-immagine img {
+  display: block;
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  image-rendering: auto;
+}

@@ -83,6 +83,11 @@
     <span class="pensiero-data">{{.CreatedAt.Format "02/01/2006 15:04"}}</span>
   </div>
   <div class="pensiero-contenuto">{{.Content}}</div>
+  {{if .ImageURL}}
+  <div class="pensiero-immagine">
+    <img src="{{.ImageURL}}" alt="immagine allegata al pensiero" loading="lazy">
+  </div>
+  {{end}}
   <div class="pensiero-footer">
     {{if and .CanSendCurious (not .Anon)}}
     <div class="pensiero-azioni">
